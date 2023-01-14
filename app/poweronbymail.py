@@ -21,6 +21,7 @@ from email.mime.text import MIMEText
 # from email.mime.base import MIMEBase
 # from email import encoders
 from socket import gaierror
+from chump import Application
 
 
 class POBE():
@@ -69,6 +70,10 @@ class POBE():
                 self.target_node = self.config['POWERON']['TARGET_NODE']
                 self.target_port = int(self.config['POWERON']['TARGET_PORT'])
 
+                self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
+                self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
+                self.pushover_sound = self.config['PUSHOVER']['SOUND']
+
             except KeyError as e:
                 logging.error(
                     f"Seems a key(s) {e} is missing from INI file. "
@@ -110,6 +115,10 @@ class POBE():
             )
 
     def run(self):
+        # Setting for PushOver
+        self.appPushover = Application(self.pushover_token_api)
+        self.userPushover = self.appPushover.get_user(self.pushover_user_key)
+
         if self.dry_run:
             logging.info(
                 "*****************************************")
@@ -212,6 +221,14 @@ class POBE():
                                         False,
                                         "Poweron - Sending WOL command.\n"
                                     )
+
+                                    self.message = \
+                                        self.userPushover.send_message(
+                                            message=f"PowerOnByEmail - "
+                                            f"WOL command sent by "
+                                            f"{match.group(0)}\n"
+                                            )
+
                                 else:
                                     logging.info(
                                         "Poweron - Nodes already running.")
