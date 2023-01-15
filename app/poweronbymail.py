@@ -158,14 +158,6 @@ class POBE():
                         if encoding:
                             subject = subject.decode(encoding)
                         else:
-                            logging.warning(
-                                    "Poweron - Subject is NULL. Skipping..."
-                                )
-                            self.writeLog(
-                                False,
-                                "Poweron - Subject in NULL. Skipping...\n"
-                            )
-
                             continue
 
                     # decode email sender
@@ -174,14 +166,6 @@ class POBE():
                         if encoding:
                             From = From.decode(encoding)
                         else:
-                            logging.warning(
-                                    "Poweron - Sender is NULL. Skipping..."
-                                )
-                            self.writeLog(
-                                    False,
-                                    "Poweron - Sender is NULL. Skipping...\n"
-                                )
-
                             continue
 
                     if str.lower(subject) == self.keyword:
