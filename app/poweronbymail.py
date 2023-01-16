@@ -167,10 +167,9 @@ class POBE():
                             From = From.decode(encoding)
                         else:
                             continue
+                    match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
                     if str.lower(subject) == self.keyword:
-
-                        match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
                         if self.verbose_logging:
                             logging.info(
@@ -339,10 +338,15 @@ class POBE():
                     else:
                         if self.verbose_logging:
                             logging.info(
-                                "Poweron - Subject not recognized. "
-                                "Skipping message."
+                                f"Poweron - Subject not recognized. "
+                                f"Skipping message. "
+                                f"{match.group(0)}"
                             )
-                        self.writeLog(False, "Poweron - skipping.\n")
+                        self.writeLog(
+                            False,
+                            f"Poweron - Subject not recognized. "
+                            f"Skipping message. {match.group(0)}\n"
+                        )
 
         # close the connection and logout
         imap.expunge()
