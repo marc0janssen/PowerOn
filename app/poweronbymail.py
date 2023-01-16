@@ -167,6 +167,7 @@ class POBE():
                             From = From.decode(encoding)
                         else:
                             continue
+
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
                     if str.lower(subject) == self.keyword:
