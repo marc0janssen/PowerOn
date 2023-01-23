@@ -162,12 +162,7 @@ class POBE():
                             subject = subject.decode("utf-8")
 
                     # decode email sender
-                    if len(decode_header(msg.get("From"))) == 1:
-                        From, encoding = decode_header(msg.get("From"))[0]
-                    elif len(decode_header(msg.get("From"))) == 2:
-                        From, encoding = decode_header(msg.get("From"))[1]
-                    else:
-                        From, encoding = decode_header(msg.get("From"))[2]
+                    From, encoding = decode_header(msg.get("From"))[-1:][0]
 
                     if isinstance(From, bytes):
                         if encoding:
