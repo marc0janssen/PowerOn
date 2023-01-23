@@ -160,6 +160,8 @@ class POBE():
                         else:
                             continue
 
+                    print(decode_header(msg.get("From")))
+
                     # decode email sender
                     From, encoding = decode_header(msg.get("From"))[0]
                     if isinstance(From, bytes):
@@ -169,11 +171,6 @@ class POBE():
                             continue
 
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
-
-                    print(decode_header(msg.get("From")))
-
-                    if not match.group(0):
-                        continue
 
                     if str.lower(subject) == self.keyword:
 
