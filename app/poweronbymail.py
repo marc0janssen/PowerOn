@@ -177,7 +177,7 @@ class POBE():
                         if encoding:
                             From = From.decode(encoding)
 
-                    print(From)
+                    print(type(From))
 
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
