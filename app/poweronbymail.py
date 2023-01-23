@@ -167,7 +167,7 @@ class POBE():
                     if not decode_header(msg.get("From"))[1]:
                         From, encoding = decode_header(msg.get("From"))[0]
                     else:
-                        From, encoding = decode_header(msg.get("From"))[1]
+                        From, encoding = decode_header(msg.get("From"))[2]
 
                     if isinstance(From, bytes):
                         if encoding:
