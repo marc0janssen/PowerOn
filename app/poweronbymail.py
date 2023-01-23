@@ -159,7 +159,7 @@ class POBE():
                         if encoding:
                             subject = subject.decode(encoding)
                         else:
-                            continue
+                            subject = subject.decode("utf-8")
 
                     print(decode_header(msg.get("From")))
 
@@ -176,6 +176,8 @@ class POBE():
                     if isinstance(From, bytes):
                         if encoding:
                             From = From.decode(encoding)
+                        else:
+                            From = From.decode("utf-8")
 
                     print(type(From))
 
