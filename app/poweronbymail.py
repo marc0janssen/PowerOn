@@ -170,7 +170,7 @@ class POBE():
 
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
-                    print(From)
+                    print(decode_header(msg.get("From")))
 
                     if not match.group(0):
                         continue
