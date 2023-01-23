@@ -176,8 +176,6 @@ class POBE():
                     if isinstance(From, bytes):
                         if encoding:
                             From = From.decode(encoding)
-                        else:
-                            continue
 
                     print(From)
 
