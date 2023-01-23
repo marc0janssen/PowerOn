@@ -163,8 +163,10 @@ class POBE():
 
                     print(decode_header(msg.get("From")))
 
+                    print(len(decode_header(msg.get("From"))))
+
                     # decode email sender
-                    if not decode_header(msg.get("From"))[1]:
+                    if len(decode_header(msg.get("From"))) == 1:
                         From, encoding = decode_header(msg.get("From"))[0]
                     else:
                         From, encoding = decode_header(msg.get("From"))[2]
