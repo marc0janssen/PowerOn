@@ -154,8 +154,6 @@ class POBE():
                     # decode the email subject
                     subject, encoding = decode_header(msg["Subject"])[0]
 
-                    print(f"encoding = {encoding}")
-
                     if isinstance(subject, bytes):
                         # if it's a bytes, decode to str
                         if encoding:
@@ -167,6 +165,9 @@ class POBE():
 
                     # decode email sender
                     From, encoding = decode_header(msg.get("From"))[0]
+
+                    print(f"encoding = {encoding}")
+
                     if isinstance(From, bytes):
                         if encoding:
                             From = From.decode(encoding)
