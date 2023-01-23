@@ -161,19 +161,11 @@ class POBE():
                         else:
                             subject = subject.decode("utf-8")
 
-                    print(decode_header(msg.get("From")))
-
-                    print(len(decode_header(msg.get("From"))))
-
                     # decode email sender
                     if len(decode_header(msg.get("From"))) == 1:
                         From, encoding = decode_header(msg.get("From"))[0]
                     else:
                         From, encoding = decode_header(msg.get("From"))[2]
-
-                    print(From)
-
-                    print(encoding)
 
                     if isinstance(From, bytes):
                         if encoding:
@@ -181,11 +173,7 @@ class POBE():
                         else:
                             From = From.decode("utf-8")
 
-                    print(type(From))
-
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
-
-                    print(f"match = {match}")
 
                     if str.lower(subject) == self.keyword:
 
