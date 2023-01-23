@@ -164,15 +164,18 @@ class POBE():
                     print(decode_header(msg.get("From")))
 
                     # decode email sender
-                    From, encoding = decode_header(msg.get("From"))[0]
-
-                    print(f"encoding = {encoding}")
+                    if not decode_header(msg.get("From"))[1]:
+                        From, encoding = decode_header(msg.get("From"))[0]
+                    else:
+                        From, encoding = decode_header(msg.get("From"))[1]
 
                     if isinstance(From, bytes):
                         if encoding:
                             From = From.decode(encoding)
                         else:
                             continue
+
+                    print(From)
 
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
