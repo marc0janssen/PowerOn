@@ -202,10 +202,13 @@ class POBE():
                                             sys.exit()
 
                                     logging.info(
-                                        "Poweron - Sending WOL command.")
+                                        f"Poweron - Sending WOL command by"
+                                        f" {match.group(0)}"
+                                        )
                                     self.writeLog(
                                         False,
-                                        "Poweron - Sending WOL command.\n"
+                                        f"Poweron - Sending WOL command by"
+                                        f" {match.group(0)}\n"
                                     )
 
                                     self.message = \
@@ -216,17 +219,27 @@ class POBE():
                                             )
 
                                 else:
-                                    logging.info(
-                                        "Poweron - Nodes already running.")
+                                    if self.verbose_logging:
+                                        logging.info(
+                                            f"Poweron - Nodes already running"
+                                            f" by {match.group(0)}"
+                                        )
                                     self.writeLog(
                                         False,
-                                        "Poweron - Nodes already running.\n")
+                                        f"Poweron - Nodes already running by "
+                                        f"{match.group(0)}\n"
+                                    )
                             else:
-                                logging.info(
-                                    "Poweron - Service is disabled.")
+                                if self.verbose_logging:
+                                    logging.info(
+                                        f"Poweron - Service is disabled by "
+                                        f"{match.group(0)}"
+                                    )
                                 self.writeLog(
                                     False,
-                                    "Poweron - Service is disabled.\n")
+                                    f"Poweron - Service is disabled by "
+                                    f"{match.group(0)}"
+                                )
 
                             sender_email = self.mail_sender
                             receiver_email = match.group(0)
