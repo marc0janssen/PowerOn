@@ -33,7 +33,7 @@ class POBE():
 
         config_dir = "/config/"
         app_dir = "/app/"
-        log_dir = "/logging/"
+        log_dir = "/logging/poweronbymail/"
 
         self.config_file = "poweronbymail.ini"
         self.exampleconfigfile = "poweronbymail.ini.example"
