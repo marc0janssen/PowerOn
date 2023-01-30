@@ -219,11 +219,10 @@ class POBE():
                                             )
 
                                 else:
-                                    if self.verbose_logging:
-                                        logging.info(
-                                            f"Poweron - Nodes already running"
-                                            f" by {match.group(0)}"
-                                        )
+                                    logging.info(
+                                        f"Poweron - Nodes already running"
+                                        f" by {match.group(0)}"
+                                    )
                                     self.writeLog(
                                         False,
                                         f"Poweron - Nodes already running by "
