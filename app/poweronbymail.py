@@ -263,23 +263,23 @@ class POBE():
                             if self.enabled:
                                 if result != 0:
                                     body = (
-                                        "Hi,\n\n Emby will be powered on, "
-                                        "be patient.\n\n"
-                                        "Have a nice day.\n\n"
+                                        "Hi,\n\n Emby wordt aangezet, "
+                                        "even geduld.\n\n"
+                                        "Fijne dag!\n\n"
                                     )
                                 else:
                                     body = (
-                                        "Hi,\n\n Emby is already powered on, "
-                                        "no need to send the 'power on' "
-                                        "command.\n\n"
-                                        "Have a nice day.\n\n"
+                                        "Hi,\n\n Emby is al aan, "
+                                        "Je hoeft het 'power on' "
+                                        "commando niet meer te sturen.\n\n"
+                                        "Fijne dag!\n\n"
                                     )
                             else:
                                 body = (
-                                    "Hi,\n\n Service is disabled at the "
-                                    "moment, no need to send the 'power on' "
-                                    "command.\n\n"
-                                    "Have a nice day.\n\n"
+                                    "Hi,\n\n Service staat uit "
+                                    ", je hoeft even geen commando's "
+                                    "te sturen.\n\n"
+                                    "Fijne dag!\n\n"
                                 )
 
                             # logfile = open(self.log_filePath, "r")
