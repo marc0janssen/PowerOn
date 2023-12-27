@@ -102,7 +102,7 @@ class ADDITIONAL_NODES():
             )
 
     def is_mac_address_active(self, mac_address):
-        command = "arp -n | grep {}".format(mac_address)
+        command = "arp -n | grep {} >/dev/null 2>/dev/null".format(mac_address)
         result = subprocess.call(command, shell=True)
 
         print(f"result={result}")
