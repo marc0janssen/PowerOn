@@ -102,7 +102,7 @@ class ADDITIONAL_NODES():
                 f"Can't write file {self.log_filePath}."
             )
 
-    def get_ip(mac_address):
+    def get_ip(self, mac_address):
         # Create an ARP request packet to get the IP address
         arp_request = Ether(dst="ff:ff:ff:ff:ff:ff") \
             / ARP(pdst='f"{self.target_network}"')
