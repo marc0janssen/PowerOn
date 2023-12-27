@@ -1,7 +1,7 @@
 # Name: additional_nodes
 # Coder: Marco Janssen (twitter @marc0janssen)
 # date: 2023-12-27 19:28:00
-# update: 2023-01-04 19:28:00
+# update: 2023-12-27 19:28:00
 
 import logging
 import sys
@@ -12,6 +12,7 @@ import socket
 from datetime import datetime
 from wakeonlan import send_magic_packet
 from chump import Application
+from scapy.all import ARP, Ether, srp
 
 
 class ADDITIONAL_NODES():
@@ -54,6 +55,8 @@ class ADDITIONAL_NODES():
                 self.target_mac_addresses = list(
                     self.config['ADDITIONALNODES']
                     ['TARGET_MAC_ADDRESSES'].split(","))
+                self.target_network = self.config
+                ['ADDITIONALNODES']['TARGET_NETWORK']
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -100,6 +103,22 @@ class ADDITIONAL_NODES():
                 f"Can't write file {self.log_filePath}."
             )
 
+    def get_ip(mac_address):
+        # Create an ARP request packet to get the IP address
+        arp_request = Ether(dst="ff:ff:ff:ff:ff:ff") \
+            / ARP(pdst='f"{self.target_network}"')
+
+        # Send the ARP request and capture the response
+        result = srp(arp_request, timeout=3, verbose=0)[0]
+
+        # Process the response to extract the IP address
+        # associated with the MAC address
+        for sent, received in result:
+            if received[ARP].hwsrc == mac_address:
+                return received[ARP].psrc
+
+        return None
+
     def run(self):
         # Setting for PushOver
         self.appPushover = Application(self.pushover_token_api)
@@ -126,14 +145,16 @@ class ADDITIONAL_NODES():
             # Port is open
 
             if result == 0:
-
-                print("node up")
-
                 if not self.dry_run:
                     for mac_address in self.target_mac_addresses:
                         try:
-                            print(mac_address)
-                            send_magic_packet(mac_address)
+
+                            ip_address = self.get_ip(mac_address)
+                            if not ip_address:
+                                print("IP not fund")
+                                send_magic_packet(mac_address)
+                            else:
+                                print("ip found")
 
                         except ValueError:
                             logging.error(

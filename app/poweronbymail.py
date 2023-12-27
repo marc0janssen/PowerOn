@@ -357,11 +357,12 @@ class POBE():
                                 f"Skipping message. "
                                 f"{match.group(0)}"
                             )
-                        self.writeLog(
-                            False,
-                            f"Poweron - Subject not recognized. "
-                            f"Skipping message. {match.group(0)}\n"
-                        )
+
+                            self.writeLog(
+                                False,
+                                f"Poweron - Subject not recognized. "
+                                f"Skipping message. {match.group(0)}\n"
+                            )
 
         # close the connection and logout
         imap.expunge()
