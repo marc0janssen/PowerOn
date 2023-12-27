@@ -17,6 +17,9 @@ from chump import Application
 class ADDITIONAL_NODES():
 
     def __init__(self):
+
+        print("init")
+
         logging.basicConfig(
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             level=logging.INFO)
