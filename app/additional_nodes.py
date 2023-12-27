@@ -132,7 +132,7 @@ class ADDITIONAL_NODES():
                 socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(
                 (self.target_node, self.target_port))
-            # Port is open
+            # Port is open of the master node
 
             if result == 0:
                 if not self.dry_run:
