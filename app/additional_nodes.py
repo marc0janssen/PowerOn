@@ -147,6 +147,8 @@ class ADDITIONAL_NODES():
                 if not self.dry_run:
                     for mac_address in self.target_mac_addresses:
                         try:
+                            
+                            print(mac_address)
 
                             ip_address = self.get_ip(mac_address)
                             if not ip_address:
