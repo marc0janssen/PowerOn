@@ -8,11 +8,11 @@ import sys
 import configparser
 import shutil
 import socket
+import subprocess
 
 from datetime import datetime
 from wakeonlan import send_magic_packet
 from chump import Application
-from scapy.all import ARP, Ether, srp
 
 
 class ADDITIONAL_NODES():
@@ -55,7 +55,6 @@ class ADDITIONAL_NODES():
                 self.target_mac_addresses = list(
                     self.config['ADDITIONALNODES']
                     ['TARGET_MAC_ADDRESSES'].split(","))
-                self.target_network = self.config['ADDITIONALNODES']['TARGET_NETWORK']
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -102,21 +101,13 @@ class ADDITIONAL_NODES():
                 f"Can't write file {self.log_filePath}."
             )
 
-    def get_ip(self, mac_address):
-        # Create an ARP request packet to get the IP address
-        arp_request = Ether(dst="ff:ff:ff:ff:ff:ff") \
-            / ARP(pdst='f"{self.target_network}"')
-
-        # Send the ARP request and capture the response
-        result = srp(arp_request, timeout=3, verbose=0)[0]
-
-        # Process the response to extract the IP address
-        # associated with the MAC address
-        for sent, received in result:
-            if received[ARP].hwsrc == mac_address:
-                return received[ARP].psrc
-
-        return None
+    def is_mac_address_active(self, mac_address):
+        command = "ping -c 1 {}".format(mac_address)
+        result = subprocess.call(command, shell=True)
+        if result == 0:
+            return True
+        else:
+            return False
 
     def run(self):
         # Setting for PushOver
@@ -147,39 +138,32 @@ class ADDITIONAL_NODES():
                 if not self.dry_run:
                     for mac_address in self.target_mac_addresses:
                         try:
-                            
-                            print(f"-{mac_address}-")
-
-                            ip_address = self.get_ip(mac_address)
-                            if not ip_address:
-                                print("IP not fund")
+                            # is MAC is not active then send magic packet
+                            if not self.is_mac_address_active(mac_address):
                                 send_magic_packet(mac_address)
-                            else:
-                                print("ip found")
+
+                                self.message = \
+                                    self.userPushover.send_message(
+                                        message=f"PowerOnByEmail - "
+                                        f"WOL command sent for "
+                                        f"{mac_address}\n"
+                                        )
+
+                                logging.info(
+                                    f"Poweron - Sending WOL command for"
+                                    f" {mac_address}"
+                                    )
+
+                                self.writeLog(
+                                    False,
+                                    f"Poweron - Sending WOL command for"
+                                    f" {mac_address}\n"
+                                )
 
                         except ValueError:
                             logging.error(
                                 "Invalid MAC-address in INI."
                             )
-                            sys.exit()
-
-                        logging.info(
-                            f"Poweron - Sending WOL command for"
-                            f" {mac_address}"
-                            )
-
-                        self.writeLog(
-                            False,
-                            f"Poweron - Sending WOL command for"
-                            f" {mac_address}\n"
-                        )
-
-                        self.message = \
-                            self.userPushover.send_message(
-                                message=f"PowerOnByEmail - "
-                                f"WOL command sent for "
-                                f"{mac_address}\n"
-                                )
 
 
 if __name__ == '__main__':
