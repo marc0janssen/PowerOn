@@ -105,6 +105,8 @@ class ADDITIONAL_NODES():
         self.appPushover = Application(self.pushover_token_api)
         self.userPushover = self.appPushover.get_user(self.pushover_user_key)
 
+        print("pre-RUN")
+
         if self.dry_run:
             logging.info(
                 "*****************************************")
