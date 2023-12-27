@@ -102,7 +102,7 @@ class ADDITIONAL_NODES():
             )
 
     def is_mac_address_active(self, mac_address):
-        command = "ping -c 1 {}".format(mac_address)
+        command = "arp -n | grep {}".format(mac_address)
         result = subprocess.call(command, shell=True)
         if result == 0:
             return True
