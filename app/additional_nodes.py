@@ -104,9 +104,6 @@ class ADDITIONAL_NODES():
     def is_mac_address_active(self, mac_address):
         command = "arp -n | grep {} >/dev/null 2>/dev/null".format(mac_address)
         result = subprocess.call(command, shell=True)
-
-        print(f"result={result}")
-
         if result == 0:
             return True
         else:
@@ -142,7 +139,8 @@ class ADDITIONAL_NODES():
                     for mac_address in self.target_mac_addresses:
                         try:
                             # is MAC is not active then send magic packet
-                            if not self.is_mac_address_active(mac_address.lower()):
+                            if not self.is_mac_address_active(
+                                    mac_address.lower()):
                                 send_magic_packet(mac_address)
 
                                 self.message = \
