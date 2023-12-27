@@ -125,11 +125,14 @@ class ADDITIONAL_NODES():
                     (self.target_node, self.target_port))
                 # Port is open
                 if result == 0:
+
+                    print("node up")
+
                     if not self.dry_run:
-                        for mac_addresses in self.target_mac_addresses:
+                        for mac_address in self.target_mac_addresses:
                             try:
-                                print(mac_addresses)
-                                send_magic_packet(mac_addresses)
+                                print(mac_address)
+                                send_magic_packet(mac_address)
 
                             except ValueError:
                                 logging.error(
@@ -139,20 +142,20 @@ class ADDITIONAL_NODES():
 
                             logging.info(
                                 f"Poweron - Sending WOL command for"
-                                f" {mac_addresses}"
+                                f" {mac_address}"
                                 )
 
                             self.writeLog(
                                 False,
                                 f"Poweron - Sending WOL command for"
-                                f" {mac_addresses}\n"
+                                f" {mac_address}\n"
                             )
 
                             self.message = \
                                 self.userPushover.send_message(
                                     message=f"PowerOnByEmail - "
                                     f"WOL command sent for "
-                                    f"{mac_addresses}\n"
+                                    f"{mac_address}\n"
                                     )
 
 
