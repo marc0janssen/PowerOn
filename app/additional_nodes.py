@@ -55,8 +55,7 @@ class ADDITIONAL_NODES():
                 self.target_mac_addresses = list(
                     self.config['ADDITIONALNODES']
                     ['TARGET_MAC_ADDRESSES'].split(","))
-                self.target_network = self.config
-                ['ADDITIONALNODES']['TARGET_NETWORK']
+                self.target_network = self.config['ADDITIONALNODES']['TARGET_NETWORK']
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
