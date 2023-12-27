@@ -139,8 +139,8 @@ class ADDITIONAL_NODES():
                     for mac_address in self.target_mac_addresses:
                         try:
                             # is MAC is not active then send magic packet
-                            if not self.is_mac_address_active(mac_address):
-                                send_magic_packet(mac_address)
+                            if not self.is_mac_address_active(mac_address.lower()):
+                                send_magic_packet(mac_address.lower())
 
                                 self.message = \
                                     self.userPushover.send_message(
