@@ -124,6 +124,9 @@ class ADDITIONAL_NODES():
                 result = sock.connect_ex(
                     (self.target_node, self.target_port))
                 # Port is open
+
+                print(result)
+
                 if result == 0:
 
                     print("node up")
