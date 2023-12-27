@@ -23,7 +23,7 @@ class ADDITIONAL_NODES():
 
         config_dir = "/config/"
         app_dir = "/app/"
-        log_dir = "/logging/additionalnodes/"
+        log_dir = "/logging/poweronbymail/"
 
         self.config_file = "poweronbymail.ini"
         self.exampleconfigfile = "poweronbymail.ini.example"
@@ -105,8 +105,6 @@ class ADDITIONAL_NODES():
         self.appPushover = Application(self.pushover_token_api)
         self.userPushover = self.appPushover.get_user(self.pushover_user_key)
 
-        print("pre-RUN")
-
         if self.dry_run:
             logging.info(
                 "*****************************************")
@@ -120,16 +118,12 @@ class ADDITIONAL_NODES():
                 "Poweron - Dry run.\n"
             )
 
-        print("RUN")
-
         if self.enabled:
             sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(
                 (self.target_node, self.target_port))
             # Port is open
-
-            print(result)
 
             if result == 0:
 
