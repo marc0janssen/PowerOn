@@ -120,50 +120,50 @@ class ADDITIONAL_NODES():
                 "Poweron - Dry run.\n"
             )
 
-            print("RUN")
+        print("RUN")
 
-            if self.enabled:
-                sock = socket.socket(
-                    socket.AF_INET, socket.SOCK_STREAM)
-                result = sock.connect_ex(
-                    (self.target_node, self.target_port))
-                # Port is open
+        if self.enabled:
+            sock = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex(
+                (self.target_node, self.target_port))
+            # Port is open
 
-                print(result)
+            print(result)
 
-                if result == 0:
+            if result == 0:
 
-                    print("node up")
+                print("node up")
 
-                    if not self.dry_run:
-                        for mac_address in self.target_mac_addresses:
-                            try:
-                                print(mac_address)
-                                send_magic_packet(mac_address)
+                if not self.dry_run:
+                    for mac_address in self.target_mac_addresses:
+                        try:
+                            print(mac_address)
+                            send_magic_packet(mac_address)
 
-                            except ValueError:
-                                logging.error(
-                                    "Invalid MAC-address in INI."
-                                )
-                                sys.exit()
+                        except ValueError:
+                            logging.error(
+                                "Invalid MAC-address in INI."
+                            )
+                            sys.exit()
 
-                            logging.info(
-                                f"Poweron - Sending WOL command for"
-                                f" {mac_address}"
-                                )
-
-                            self.writeLog(
-                                False,
-                                f"Poweron - Sending WOL command for"
-                                f" {mac_address}\n"
+                        logging.info(
+                            f"Poweron - Sending WOL command for"
+                            f" {mac_address}"
                             )
 
-                            self.message = \
-                                self.userPushover.send_message(
-                                    message=f"PowerOnByEmail - "
-                                    f"WOL command sent for "
-                                    f"{mac_address}\n"
-                                    )
+                        self.writeLog(
+                            False,
+                            f"Poweron - Sending WOL command for"
+                            f" {mac_address}\n"
+                        )
+
+                        self.message = \
+                            self.userPushover.send_message(
+                                message=f"PowerOnByEmail - "
+                                f"WOL command sent for "
+                                f"{mac_address}\n"
+                                )
 
 
 if __name__ == '__main__':
