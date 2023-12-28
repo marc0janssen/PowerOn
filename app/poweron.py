@@ -117,57 +117,54 @@ class POWERON():
                 "Poweron - Dry run.\n"
             )
 
-            if self.enabled:
-                sock = socket.socket(
-                    socket.AF_INET, socket.SOCK_STREAM)
-                result = sock.connect_ex(
-                    (self.target_node, self.target_port))
-                if result != 0:
-                    if not self.dry_run:
-                        try:
-                            send_magic_packet(self.macaddress)
+        if self.enabled:
+            sock = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex(
+                (self.target_node, self.target_port))
+            if result != 0:
+                if not self.dry_run:
+                    try:
+                        send_magic_packet(self.macaddress)
 
-                            logging.info(
-                                "PowerOn - Sending WOL command by cron"
+                        logging.info(
+                            "PowerOn - Sending WOL command by cron"
+                            )
+                        self.writeLog(
+                            False,
+                            "PowerOn - Sending WOL command by cron"
+                        )
+
+                        self.message = \
+                            self.userPushover.send_message(
+                                message="PowerOn - "
+                                "WOL command sent by cron"
                                 )
-                            self.writeLog(
-                                False,
-                                "PowerOn - Sending WOL command by cron"
-                            )
 
-                            self.message = \
-                                self.userPushover.send_message(
-                                    message="PowerOn - "
-                                    "WOL command sent by cron"
-                                    )
+                    except ValueError:
+                        logging.error(
+                            "Invalid MAC-address in INI."
+                        )
+                        sys.exit()
 
-                        except ValueError:
-                            logging.error(
-                                "Invalid MAC-address in INI."
-                            )
-                            sys.exit()
-
-                else:
-
-                    print("alraedy")
-
-                    logging.info(
-                        "PowerOn - Nodes already running"
-                        " by cron"
-                    )
-                    self.writeLog(
-                        False,
-                        "PowerOn - Nodes already running by cron"
-                    )
             else:
-                if self.verbose_logging:
-                    logging.info(
-                        "PowerOn - Service is disabled by cron"
-                    )
+                logging.info(
+                    "PowerOn - Nodes already running"
+                    " by cron"
+                )
                 self.writeLog(
                     False,
+                    "PowerOn - Nodes already running by cron"
+                )
+        else:
+            if self.verbose_logging:
+                logging.info(
                     "PowerOn - Service is disabled by cron"
                 )
+            self.writeLog(
+                False,
+                "PowerOn - Service is disabled by cron"
+            )
 
 
 if __name__ == '__main__':
