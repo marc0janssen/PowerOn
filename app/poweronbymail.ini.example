@@ -13,7 +13,7 @@ MAIL_SENDER = user@domain.tld
 [POWERON]
 KEYWORD = keyword
 ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
-MACADDRESS = FF-FF-11-11-22-22
+MACADDRESS = FF:FF:11:11:22:22
 TARGET_NODE = 192.168.1.1
 TARGET_PORT = 80
 

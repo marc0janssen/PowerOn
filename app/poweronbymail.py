@@ -70,9 +70,12 @@ class POBE():
                 self.keyword = self.config['POWERON']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['POWERON']['ALLOWED_SENDERS'].split(","))
-                self.macaddress = self.config['POWERON']['MACADDRESS']
+                self.macaddress = \
+                    self.config['POWERON']['MACADDRESS'].replace(":", "-")
                 self.target_node = self.config['POWERON']['TARGET_NODE']
                 self.target_port = int(self.config['POWERON']['TARGET_PORT'])
+
+                print(self.macaddress)
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
