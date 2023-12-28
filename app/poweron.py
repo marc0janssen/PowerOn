@@ -148,6 +148,9 @@ class POWERON():
                             sys.exit()
 
                 else:
+
+                    print("alraedy")
+
                     logging.info(
                         "PowerOn - Nodes already running"
                         " by cron"
