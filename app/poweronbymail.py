@@ -70,7 +70,8 @@ class POBE():
                 self.keyword = self.config['POWERON']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['POWERON']['ALLOWED_SENDERS'].split(","))
-                self.macaddress = self.config['POWERON']['MACADDRESS'].replace(":", "-").lower()
+                self.macaddress = self.config['POWERON']['MACADDRESS']\
+                    .replace(":", "-").lower()
                 self.target_node = self.config['POWERON']['TARGET_NODE']
                 self.target_port = int(self.config['POWERON']['TARGET_PORT'])
 
