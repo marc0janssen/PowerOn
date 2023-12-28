@@ -49,20 +49,24 @@ class POBE():
                 self.config = configparser.ConfigParser()
                 self.config.read(self.config_filePath)
 
-                # POWERON
+                # GENERAL
                 self.enabled = True if (
-                    self.config['POWERON']['ENABLED'] == "ON") else False
+                    self.config['GENERAL']['ENABLED'] == "ON") else False
                 self.dry_run = True if (
-                    self.config['POWERON']['DRY_RUN'] == "ON") else False
+                    self.config['GENERAL']['DRY_RUN'] == "ON") else False
                 self.verbose_logging = True if (
-                    self.config['POWERON']['VERBOSE_LOGGING'] == "ON") \
+                    self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
                     else False
+
+                # MAIL
                 self.mail_port = int(
-                    self.config['POWERON']['MAIL_PORT'])
-                self.mail_server = self.config['POWERON']['MAIL_SERVER']
-                self.mail_login = self.config['POWERON']['MAIL_LOGIN']
-                self.mail_password = self.config['POWERON']['MAIL_PASSWORD']
-                self.mail_sender = self.config['POWERON']['MAIL_SENDER']
+                    self.config['MAIL']['MAIL_PORT'])
+                self.mail_server = self.config['MAIL']['MAIL_SERVER']
+                self.mail_login = self.config['MAIL']['MAIL_LOGIN']
+                self.mail_password = self.config['MAIL']['MAIL_PASSWORD']
+                self.mail_sender = self.config['MAIL']['MAIL_SENDER']
+
+                # POWERON
                 self.keyword = self.config['POWERON']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['POWERON']['ALLOWED_SENDERS'].split(","))
@@ -70,6 +74,7 @@ class POBE():
                 self.target_node = self.config['POWERON']['TARGET_NODE']
                 self.target_port = int(self.config['POWERON']['TARGET_PORT'])
 
+                # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
                 self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
                 self.pushover_sound = self.config['PUSHOVER']['SOUND']
