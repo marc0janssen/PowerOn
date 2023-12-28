@@ -132,7 +132,7 @@ class POWERON():
                             )
                         self.writeLog(
                             False,
-                            "PowerOn - Sending WOL command by cron"
+                            "PowerOn - Sending WOL command by cron\n"
                         )
 
                         self.message = \
@@ -154,7 +154,7 @@ class POWERON():
                 )
                 self.writeLog(
                     False,
-                    "PowerOn - Nodes already running by cron"
+                    "PowerOn - Nodes already running by cron\n"
                 )
         else:
             if self.verbose_logging:
@@ -163,7 +163,7 @@ class POWERON():
                 )
             self.writeLog(
                 False,
-                "PowerOn - Service is disabled by cron"
+                "PowerOn - Service is disabled by cron\n"
             )
 
 

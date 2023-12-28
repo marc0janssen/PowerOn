@@ -243,7 +243,7 @@ class POBE():
                                 self.writeLog(
                                     False,
                                     f"Poweron - Service is disabled by "
-                                    f"{match.group(0)}"
+                                    f"{match.group(0)}\n"
                                 )
 
                             sender_email = self.mail_sender
