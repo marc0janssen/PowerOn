@@ -147,21 +147,21 @@ class ADDITIONAL_NODES():
 
                                 self.message = \
                                     self.userPushover.send_message(
-                                        message=f"PowerOnByEmail - "
+                                        message=f"PowerOn Additional Nodes - "
                                         f"WOL command sent for "
                                         f"{mac_address}\n"
                                         )
 
                                 logging.info(
-                                    f"Poweron - Sending WOL command for"
+                                    f"PowerOn - Sending WOL command for"
                                     f" {mac_address}"
                                     )
 
                                 self.writeLog(
                                     False,
-                                    f"Poweron - Sending WOL command for"
+                                    f"PowerOn - Sending WOL command for"
                                     f" {mac_address}\n"
-                                )
+                                    )
 
                         except ValueError:
                             logging.error(
