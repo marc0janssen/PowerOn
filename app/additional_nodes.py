@@ -26,8 +26,8 @@ class ADDITIONAL_NODES():
         app_dir = "/app/"
         log_dir = "/logging/poweronbymail/"
 
-        self.config_file = "poweronbymail.ini"
-        self.exampleconfigfile = "poweronbymail.ini.example"
+        self.config_file = "poweron.ini"
+        self.exampleconfigfile = "poweron.ini.example"
         self.log_file = "additionalnodes.log"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
