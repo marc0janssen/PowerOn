@@ -263,7 +263,6 @@ class POD():
                                             f"PowerOff Delay sent by "
                                             f"{match.group(0)}\n"
                                             )
-
                                 else:
                                     logging.info(
                                         f"PowerOff - Nodes not running"
