@@ -207,18 +207,18 @@ class POD():
 
                                                 lines = content.split('\n')
 
-                                                for i in range(len(lines)):
+                                                for line in range(len(lines)):
                                                     if "poweroff.py" in \
-                                                            lines[i]:
+                                                            lines[line]:
                                                         line_parts = \
-                                                            lines[i].split()
+                                                            lines[line].split()
 
                                                         line_parts[1] = \
                                                             str((int(
                                                                 line_parts[1])
                                                                   + 2) % 24)
 
-                                                        lines[i] = ' '.join(
+                                                        lines[line] = ' '.join(
                                                             line_parts)
                                                         break
 
