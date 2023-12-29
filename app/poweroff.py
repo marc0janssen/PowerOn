@@ -1,16 +1,16 @@
-# Name: poweron
+# Name: poweroff
 # Coder: Marco Janssen (twitter @marc0janssen)
-# date: 2023-12-28 17:15:00
-# update: 2023-12-28 17:15:00
+# date: 2023-12-29 13:33:00
+# update: 2023-12-29 13:33:00
 
 import logging
 import sys
 import configparser
 import shutil
 import socket
+import subprocess
 
 from datetime import datetime
-from wakeonlan import send_magic_packet
 from chump import Application
 
 
@@ -47,13 +47,14 @@ class POWERON():
                 self.verbose_logging = True if (
                     self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
                     else False
+                self.localrootpwd = self.config['GENERAL']['LOCAL_ROOT_PWD']
 
                 # NODE
                 self.nodename = self.config['NODE']['NODE_NAME']
-                self.macaddress = self.config['NODE']['NODE_MAC']\
-                    .replace(":", "-").lower()
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
+                self.nodeuser = self.config['NODE']['NODE_USER']
+                self.nodepwd = self.config['NODE']['NODE_PWD']
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -126,20 +127,35 @@ class POWERON():
             if result != 0:
                 if not self.dry_run:
                     try:
-                        send_magic_packet(self.macaddress)
+                        # Execute the shell command
+
+                        result = subprocess.run(
+                            ["sshpass",
+                                "-p",
+                                f"{self.localrootpwd}",
+                                "ssh",
+                                "-t",
+                                f"{self.nodeuser}"
+                                f"@{self.nodeip}",
+                                f"echo {self.nodepwd}"
+                                f"|sudo -S poweroff"],
+                            capture_output=True, text=True)
+
+                        # Print the command output
+                        logging.info(result.stdout)
 
                         logging.info(
-                            "PowerOn - Sending WOL command by cron"
+                            "PowerOn - Sending SLEEP command by cron"
                             )
                         self.writeLog(
                             False,
-                            "PowerOn - Sending WOL command by cron\n"
+                            "PowerOn - Sending SLEEP command by cron\n"
                         )
 
                         self.message = \
                             self.userPushover.send_message(
                                 message="PowerOn - "
-                                "WOL command sent by cron"
+                                "SLEEP command sent by cron"
                                 )
 
                     except ValueError:

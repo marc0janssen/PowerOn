@@ -59,6 +59,7 @@ class POBE():
                     else False
 
                 # NODE
+                self.nodename = self.config['NODE']['NODE_NAME']
                 self.macaddress = self.config['NODE']['NODE_MAC']\
                     .replace(":", "-").lower()
                 self.nodeip = self.config['NODE']['NODE_IP']
@@ -255,7 +256,7 @@ class POBE():
                             message["From"] = sender_email
                             message['To'] = receiver_email
                             message['Subject'] = (
-                                "Poweron - Server"
+                                f"Poweron - {self.nodename}"
                             )
 
                             # attachment = open(self.log_filePath, 'rb')
@@ -271,20 +272,21 @@ class POBE():
                             if self.enabled:
                                 if result != 0:
                                     body = (
-                                        "Hi,\n\n Server wordt aangezet, "
-                                        "even geduld.\n\n"
-                                        "Fijne dag!\n\n"
+                                        f"Hi,\n\n {self.nodename} "
+                                        f"wordt aangezet, "
+                                        f"even geduld.\n\n"
+                                        f"Fijne dag!\n\n"
                                     )
                                 else:
                                     body = (
-                                        "Hi,\n\n Server is al aan, "
-                                        "Je hoeft het 'power on' "
-                                        "commando niet meer te sturen.\n\n"
-                                        "Fijne dag!\n\n"
+                                        f"Hi,\n\n {self.nodename} is al aan, "
+                                        f"Je hoeft het 'power on' "
+                                        f"commando niet meer te sturen.\n\n"
+                                        f"Fijne dag!\n\n"
                                     )
                             else:
                                 body = (
-                                    "Hi,\n\n Service staat uit "
+                                    "Hi,\n\n de service staat uit "
                                     ", je hoeft even geen commando's "
                                     "te sturen.\n\n"
                                     "Fijne dag!\n\n"

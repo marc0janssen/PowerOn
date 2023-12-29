@@ -12,10 +12,10 @@ import configparser
 import shutil
 import smtplib
 import socket
+import subprocess
 
 from datetime import datetime
 from email.header import decode_header
-import subprocess
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from socket import gaierror
@@ -58,6 +58,7 @@ class POBE():
                 self.localrootpwd = self.config['GENERAL']['LOCAL_ROOT_PWD']
 
                 # NODE
+                self.nodename = self.config['NODE']['NODE_NAME']
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
                 self.nodeuser = self.config['NODE']['NODE_USER']
@@ -269,22 +270,23 @@ class POBE():
                             message["From"] = sender_email
                             message['To'] = receiver_email
                             message['Subject'] = (
-                                "PowerOff - Server"
+                                f"PowerOff - {self.nodename}"
                             )
 
                             if self.enabled:
                                 if result != 0:
                                     body = (
-                                        "Hi,\n\n Server wordt aangezet, "
-                                        "even geduld.\n\n"
-                                        "Fijne dag!\n\n"
+                                        f"Hi,\n\n {self.nodename} "
+                                        f"wordt aangezet, "
+                                        f"even geduld.\n\n"
+                                        f"Fijne dag!\n\n"
                                     )
                                 else:
                                     body = (
-                                        "Hi,\n\n Server is al aan, "
-                                        "Je hoeft het 'power on' "
-                                        "commando niet meer te sturen.\n\n"
-                                        "Fijne dag!\n\n"
+                                        f"Hi,\n\n {self.nodename} is al aan, "
+                                        f"Je hoeft het 'power on' "
+                                        f"commando niet meer te sturen.\n\n"
+                                        f"Fijne dag!\n\n"
                                     )
                             else:
                                 body = (

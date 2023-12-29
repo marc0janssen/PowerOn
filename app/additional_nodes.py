@@ -54,9 +54,9 @@ class ADDITIONAL_NODES():
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
                 # ADDITIONALNODES
-                self.target_mac_addresses = list(
+                self.node_mac_addresses = list(
                     self.config['ADDITIONALNODES']
-                    ['TARGET_MAC_ADDRESSES'].split(","))
+                    ['NODE_MAC_ADDRESSES'].split(","))
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -138,7 +138,7 @@ class ADDITIONAL_NODES():
 
             if result == 0:
                 if not self.dry_run:
-                    for mac_address in self.target_mac_addresses:
+                    for mac_address in self.node_mac_addresses:
                         try:
                             # is MAC is not active then send magic packet
                             if not self.is_mac_address_active(
