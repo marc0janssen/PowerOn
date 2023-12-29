@@ -180,7 +180,7 @@ class POBE():
 
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
-                    if str.lower(subject) == self.keyword.lower():
+                    if self.keyword.lower() in str.lower(subject):
 
                         if self.verbose_logging:
                             logging.info(
@@ -198,7 +198,7 @@ class POBE():
                                     socket.AF_INET, socket.SOCK_STREAM)
                                 result = sock.connect_ex(
                                     (self.nodeip, self.nodeport))
-                                if result != 0:
+                                if result == 0:  # is main node running?
                                     if not self.dry_run:
                                         try:
                                             with open("/etc/crontabs/root", 'r') as file:
@@ -228,7 +228,6 @@ class POBE():
                                             logging.error("File not found - /etc/crontabs/root.")
                                         except IOError:
                                             logging.error("Error reading the file /etc/crontabs/root.")
-
 
                                     logging.info(
                                         f"Poweron - Sending WOL command by"
