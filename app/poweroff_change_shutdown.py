@@ -201,34 +201,47 @@ class POBE():
                                 if result == 0:
                                     if not self.dry_run:
                                         try:
-                                            with open("/etc/crontabs/root", 'r') as file:
+                                            with open(
+                                                "/etc/crontabs/root", 'r') \
+                                                    as file:
                                                 content = file.read()
                                                 file.close()
 
                                                 lines = content.split('\n')
 
                                                 for i in range(len(lines)):
-                                                    if "poweron.py" in lines[i]:
-                                                        line_parts = lines[i].split()
-                                                        line_parts[1] = '101010110'
-                                                        lines[i] = ' '.join(line_parts)
+                                                    if "poweron.py" in \
+                                                            lines[i]:
+                                                        line_parts = \
+                                                            lines[i].split()
+                                                        line_parts[1] = int(line_parts[1]) + 2
+                                                        lines[i] = ' '.join(
+                                                            line_parts)
                                                         break
 
                                                 new_text = '\n'.join(lines)
 
                                                 try:
-                                                    with open("/tmp/text.txt", 'w') as file:
+                                                    with open(
+                                                        "/tmp/text.txt", 'w') \
+                                                            as file:
                                                         file.write(new_text)
                                                         file.close()
 
                                                 except IOError:
-                                                    logging.error("Error writing the file /etc/crontabs/root.")
+                                                    logging.error(
+                                                        "Error writing the "
+                                                        "file /etc/crontabs"
+                                                        "/root.")
 
                                         except FileNotFoundError:
-                                            logging.error("File not found - /etc/crontabs/root.")
+                                            logging.error(
+                                                "File not found - "
+                                                "/etc/crontabs/root.")
                                         except IOError:
-                                            logging.error("Error reading the file /etc/crontabs/root.")
-
+                                            logging.error(
+                                                "Error reading the"
+                                                " file /etc/crontabs/root.")
 
                                     logging.info(
                                         f"Poweron - Sending WOL command by"
