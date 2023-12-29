@@ -202,19 +202,17 @@ class POBE():
                                         try:
                                             # Execute the shell command
 
-                                            print(self.localrootpwd)
-                                            print(self.nodeuser)
-                                            print(self.target_node)
-                                            print(self.nodepwd)
-
                                             result = subprocess.run(
                                                 ["sshpass",
                                                     "-p",
                                                     f"{self.localrootpwd}",
                                                     "ssh",
                                                     "-t",
-                                                    f"{self.nodeuser}@{self.target_node}",
-                                                    f"echo {self.nodepwd}|sudo -S poweroff"], capture_output=True, text=True)
+                                                    f"{self.nodeuser}"
+                                                    f"@{self.target_node}",
+                                                    f"echo {self.nodepwd}"
+                                                    f"|sudo -S poweroff"],
+                                                capture_output=True, text=True)
 
                                             # Print the command output
                                             logging.info(result.stdout)
