@@ -210,7 +210,7 @@ class POBE():
                                                  f"{self.nodeuser}@\
                                                     {self.target_node}",
                                                  F"echo {self.nodepwd}\
-                                                 |sudo -S reboot"],
+                                                 |sudo -S poweroff"],
                                                 capture_output=True, text=True)
 
                                             # Print the command output
