@@ -198,11 +198,12 @@ class POBE():
                                     socket.AF_INET, socket.SOCK_STREAM)
                                 result = sock.connect_ex(
                                     (self.nodeip, self.nodeport))
-                                if result != 0:
+                                if result == 0:
                                     if not self.dry_run:
                                         try:
                                             with open("/etc/crontabs/root", 'r') as file:
                                                 content = file.read()
+                                                file.close()
 
                                                 lines = content.split('\n')
 
@@ -215,11 +216,10 @@ class POBE():
 
                                                 new_text = '\n'.join(lines)
 
-                                                print(new_text)
-
                                                 try:
                                                     with open("/tmp/text.txt", 'w') as file:
                                                         file.write(new_text)
+                                                        file.close()
 
                                                 except IOError:
                                                     logging.error("Error writing the file /etc/crontabs/root.")
