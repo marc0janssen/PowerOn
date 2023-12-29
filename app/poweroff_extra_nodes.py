@@ -179,7 +179,7 @@ class EXTRA_NODES():
                                     capture_output=True, text=True)
 
                                 # Print the command output
-                                logging.info(result.stdout)
+                                # logging.info(result.stdout)
 
                                 self.message = \
                                     self.userPushover.send_message(
