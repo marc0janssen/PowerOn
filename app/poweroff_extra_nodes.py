@@ -155,17 +155,13 @@ class ADDITIONAL_NODES():
                 (self.nodeip, self.nodeport))
             # Port is open of the master node
 
-            if result == 0:
+            if result != 0:
                 if not self.dry_run:
 
                     numofnodes = len(self.nodename)
 
                     for node in range(numofnodes):
                         try:
-
-                            print(self.is_mac_address_active(
-                                    self.nodemacaddress[node].lower()))
-
                             # is MAC is not active then send magic packet
                             if not self.is_mac_address_active(
                                     self.nodemacaddress[node].lower()):
