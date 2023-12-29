@@ -160,14 +160,14 @@ class EXTRA_NODES():
                                         )
 
                                 logging.info(
-                                    f"PowerOn - Sending WOL command for"
+                                    f"PowerOn - Sending WOL command for "
                                     f"{self.nodename[node]} - "
                                     f"{self.nodemacaddress[node]}"
                                     )
 
                                 self.writeLog(
                                     False,
-                                    f"PowerOn - Sending WOL command for"
+                                    f"PowerOn - Sending WOL command for "
                                     f"{self.nodename[node]} - "
                                     f"{self.nodemacaddress[node]}\n"
                                     )

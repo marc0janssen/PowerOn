@@ -14,7 +14,7 @@ from datetime import datetime
 from chump import Application
 
 
-class POWERON():
+class POWEROFF():
 
     def __init__(self):
         logging.basicConfig(
@@ -116,7 +116,7 @@ class POWERON():
 
             self.writeLog(
                 False,
-                "Poweron - Dry run.\n"
+                "PowerOff - Dry run.\n"
             )
 
         if self.enabled:
@@ -152,16 +152,16 @@ class POWERON():
                         # logging.info(result.stdout)
 
                         logging.info(
-                            "PowerOn - Sending SLEEP command by cron"
+                            "PowerOff - Sending SLEEP command by cron"
                             )
                         self.writeLog(
                             False,
-                            "PowerOn - Sending SLEEP command by cron\n"
+                            "PowerOff - Sending SLEEP command by cron\n"
                         )
 
                         self.message = \
                             self.userPushover.send_message(
-                                message="PowerOn - "
+                                message="PowerOff - "
                                 "SLEEP command sent by cron"
                                 )
 
@@ -173,26 +173,26 @@ class POWERON():
 
             else:
                 logging.info(
-                    "PowerOn - Nodes already running"
+                    "PowerOff - Nodes already down"
                     " by cron"
                 )
                 self.writeLog(
                     False,
-                    "PowerOn - Nodes already running by cron\n"
+                    "PowerOff - Nodes already down by cron\n"
                 )
         else:
             if self.verbose_logging:
                 logging.info(
-                    "PowerOn - Service is disabled by cron"
+                    "PowerOff - Service is disabled by cron"
                 )
             self.writeLog(
                 False,
-                "PowerOn - Service is disabled by cron\n"
+                "PowerOff - Service is disabled by cron\n"
             )
 
 
 if __name__ == '__main__':
 
-    poweron = POWERON()
-    poweron.run()
-    poweron = None
+    poweroff = POWEROFF()
+    poweroff.run()
+    poweroff = None

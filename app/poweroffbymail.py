@@ -279,7 +279,7 @@ class POBE():
                                 if result != 0:
                                     body = (
                                         f"Hi,\n\n {self.nodename} "
-                                        f"wordt aangezet, "
+                                        f"wordt uitgezet, "
                                         f"even geduld.\n\n"
                                         f"Fijne dag!\n\n"
                                     )

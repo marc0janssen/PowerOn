@@ -140,7 +140,7 @@ class EXTRA_NODES():
 
             self.writeLog(
                 False,
-                "Poweron - Dry run.\n"
+                "PowerOff - Dry run.\n"
             )
 
         if self.enabled:
@@ -189,13 +189,13 @@ class EXTRA_NODES():
                                         )
 
                                 logging.info(
-                                    f"PowerOn - Sending SLEEP command for"
+                                    f"PowerOff - Sending SLEEP command for"
                                     f" {self.nodename[node]}"
                                     )
 
                                 self.writeLog(
                                     False,
-                                    f"PowerOn - Sending SLEEP command for"
+                                    f"PowerOff - Sending SLEEP command for"
                                     f" {self.nodename[node]}\n"
                                     )
 
