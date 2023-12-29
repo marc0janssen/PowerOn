@@ -202,7 +202,7 @@ class POBE():
                                     if not self.dry_run:
                                         try:
                                             with open(
-                                                "/tmp/text.txt", 'r') \
+                                                "/etc/crontabs/root", 'r') \
                                                     as file:
                                                 content = file.read()
                                                 file.close()
@@ -228,8 +228,9 @@ class POBE():
 
                                                 try:
                                                     with open(
-                                                        "/tmp/text.txt", 'w') \
-                                                            as file:
+                                                            "/etc/crontabs"
+                                                            "/root", 'w') \
+                                                                as file:
                                                         file.write(new_text)
                                                         file.close()
 
