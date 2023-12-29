@@ -124,7 +124,7 @@ class POWERON():
                 socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(
                 (self.nodeip, self.nodeport))
-            if result != 0:
+            if result == 0:
                 if not self.dry_run:
                     try:
                         # Execute the shell command
