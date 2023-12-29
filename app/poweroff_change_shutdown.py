@@ -202,7 +202,7 @@ class POBE():
                                     if not self.dry_run:
                                         try:
                                             with open(
-                                                "/etc/crontabs/root", 'r') \
+                                                "/tmp/text.txt", 'r') \
                                                     as file:
                                                 content = file.read()
                                                 file.close()
@@ -297,16 +297,6 @@ class POBE():
                                 f"Poweron - {self.nodename}"
                             )
 
-                            # attachment = open(self.log_filePath, 'rb')
-                            # obj = MIMEBase('application', 'octet-stream')
-                            # obj.set_payload((attachment).read())
-                            # encoders.encode_base64(obj)
-                            # obj.add_header(
-                            #     'Content-Disposition',
-                            #     "attachment; filename= "+self.log_file
-                            # )
-                            # message.attach(obj)
-
                             if self.enabled:
                                 if result != 0:
                                     body = (
@@ -329,10 +319,6 @@ class POBE():
                                     "te sturen.\n\n"
                                     "Fijne dag!\n\n"
                                 )
-
-                            # logfile = open(self.log_filePath, "r")
-                            # body += ''.join(logfile.readlines())
-                            # logfile.close()
 
                             plain_text = MIMEText(
                                 body, _subtype='plain', _charset='UTF-8')
