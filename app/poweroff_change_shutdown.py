@@ -214,7 +214,12 @@ class POBE():
                                                             lines[i]:
                                                         line_parts = \
                                                             lines[i].split()
-                                                        line_parts[1] = str(int(line_parts[1]) + 2)
+
+                                                        line_parts[1] = \
+                                                            str((int(
+                                                                line_parts[1])
+                                                                  + 2) % 24)
+
                                                         lines[i] = ' '.join(
                                                             line_parts)
                                                         break
