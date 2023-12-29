@@ -49,9 +49,9 @@ class ADDITIONAL_NODES():
                     self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
                     else False
 
-                # POWERON
-                self.target_node = self.config['POWERON']['TARGET_NODE']
-                self.target_port = int(self.config['POWERON']['TARGET_PORT'])
+                # NODE
+                self.target_node = self.config['NODE']['TARGET_NODE']
+                self.target_port = int(self.config['NODE']['TARGET_PORT'])
 
                 # ADDITIONALNODES
                 self.target_mac_addresses = list(
