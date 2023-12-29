@@ -77,6 +77,9 @@ class POBE():
                 self.allowed_senders = list(
                     self.config['POWEROFF']['ALLOWED_SENDERS'].split(","))
 
+                # EXTENDTIME
+                self.defaulthour = self.config['EXTENDTIME']['DEFAULT_HOUR']
+
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
                 self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
@@ -375,6 +378,42 @@ class POBE():
                                 f"PowerOff - Subject not recognized. "
                                 f"Skipping message. {match.group(0)}\n"
                             )
+        try:
+            with open("/etc/crontabs/root", 'r') as file:
+                content = file.read()
+                file.close()
+
+                lines = content.split('\n')
+
+                for line in range(len(lines)):
+                    if "poweroff.py" in lines[line]:
+
+                        line_parts = lines[line].split()
+                        line_parts[1] = self.defaulthour
+
+                        lines[line] = ' '.join(line_parts)
+                        break
+
+                new_text = '\n'.join(lines)
+
+                try:
+                    with open("/etc/crontabs/root", 'w') as file:
+                        file.write(new_text)
+                        file.close()
+
+                except IOError:
+                    logging.error(
+                        "Error writing the "
+                        "file /etc/crontabs/root.")
+
+        except FileNotFoundError:
+            logging.error(
+                "File not found - "
+                "/etc/crontabs/root.")
+        except IOError:
+            logging.error(
+                "Error reading the"
+                " file /etc/crontabs/root.")
 
         # close the connection and logout
         imap.expunge()
