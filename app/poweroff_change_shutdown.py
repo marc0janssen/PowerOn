@@ -222,12 +222,12 @@ class POBE():
                                                         file.write(new_text)
 
                                                 except IOError:
-                                                    logging.error("Error writing the file /etc/crontab/root.")
+                                                    logging.error("Error writing the file /etc/crontabs/root.")
 
                                         except FileNotFoundError:
-                                            logging.error("File not found - /etc/crontab/root.")
+                                            logging.error("File not found - /etc/crontabs/root.")
                                         except IOError:
-                                            logging.error("Error reading the file /etc/crontab/root.")
+                                            logging.error("Error reading the file /etc/crontabs/root.")
 
                                     logging.info(
                                         f"Poweron - Sending WOL command by"
