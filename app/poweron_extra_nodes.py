@@ -1,7 +1,7 @@
-# Name: poweroff
+# Name: additional_nodes
 # Coder: Marco Janssen (twitter @marc0janssen)
-# date: 2023-12-29 13:33:00
-# update: 2023-12-29 13:33:00
+# date: 2023-12-27 19:28:00
+# update: 2023-12-27 19:28:00
 
 import logging
 import sys
@@ -11,10 +11,11 @@ import socket
 import subprocess
 
 from datetime import datetime
+from wakeonlan import send_magic_packet
 from chump import Application
 
 
-class POWERON():
+class ADDITIONAL_NODES():
 
     def __init__(self):
         logging.basicConfig(
@@ -27,7 +28,7 @@ class POWERON():
 
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"
-        self.log_file = "poweron.log"
+        self.log_file = "additionalnodes.log"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
         self.log_filePath = f"{log_dir}{self.log_file}"
@@ -49,11 +50,13 @@ class POWERON():
                     else False
 
                 # NODE
-                self.nodename = self.config['NODE']['NODE_NAME']
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
-                self.nodeuser = self.config['NODE']['NODE_USER']
-                self.nodepwd = self.config['NODE']['NODE_PWD']
+
+                # EXTRANODES
+                self.node_mac_address = list(
+                    self.config['EXTRANODES']
+                    ['NODE_MAC_ADDRESS'].split(","))
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -100,6 +103,14 @@ class POWERON():
                 f"Can't write file {self.log_filePath}."
             )
 
+    def is_mac_address_active(self, mac_address):
+        command = "arp -n | grep {} >/dev/null 2>/dev/null".format(mac_address)
+        result = subprocess.call(command, shell=True)
+        if result == 0:
+            return True
+        else:
+            return False
+
     def run(self):
         # Setting for PushOver
         self.appPushover = Application(self.pushover_token_api)
@@ -123,68 +134,43 @@ class POWERON():
                 socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(
                 (self.nodeip, self.nodeport))
+            # Port is open of the master node
+
             if result == 0:
                 if not self.dry_run:
-                    try:
-                        # Execute the shell command
+                    for mac_address in self.node_mac_address:
+                        try:
+                            # is MAC is not active then send magic packet
+                            if not self.is_mac_address_active(
+                                    mac_address.lower()):
+                                send_magic_packet(mac_address)
 
-                        result = subprocess.run(
-                            ["sshpass",
-                                "-p",
-                                f"{self.nodepwd}",
-                                "ssh",
-                                "-t",
-                                f"{self.nodeuser}"
-                                f"@{self.nodeip}",
-                                f"echo {self.nodepwd}"
-                                f"|sudo -S poweroff"],
-                            capture_output=True, text=True)
+                                self.message = \
+                                    self.userPushover.send_message(
+                                        message=f"PowerOn Additional Nodes - "
+                                        f"WOL command sent for "
+                                        f"{mac_address}\n"
+                                        )
 
-                        # Print the command output
-                        logging.info(result.stdout)
+                                logging.info(
+                                    f"PowerOn - Sending WOL command for"
+                                    f" {mac_address}"
+                                    )
 
-                        logging.info(
-                            "PowerOn - Sending SLEEP command by cron"
+                                self.writeLog(
+                                    False,
+                                    f"PowerOn - Sending WOL command for"
+                                    f" {mac_address}\n"
+                                    )
+
+                        except ValueError:
+                            logging.error(
+                                "Invalid MAC-address in INI."
                             )
-                        self.writeLog(
-                            False,
-                            "PowerOn - Sending SLEEP command by cron\n"
-                        )
-
-                        self.message = \
-                            self.userPushover.send_message(
-                                message="PowerOn - "
-                                "SLEEP command sent by cron"
-                                )
-
-                    except ValueError:
-                        logging.error(
-                            "Invalid MAC-address in INI."
-                        )
-                        sys.exit()
-
-            else:
-                logging.info(
-                    "PowerOn - Nodes already running"
-                    " by cron"
-                )
-                self.writeLog(
-                    False,
-                    "PowerOn - Nodes already running by cron\n"
-                )
-        else:
-            if self.verbose_logging:
-                logging.info(
-                    "PowerOn - Service is disabled by cron"
-                )
-            self.writeLog(
-                False,
-                "PowerOn - Service is disabled by cron\n"
-            )
 
 
 if __name__ == '__main__':
 
-    poweron = POWERON()
-    poweron.run()
-    poweron = None
+    an = ADDITIONAL_NODES()
+    an.run()
+    an = None

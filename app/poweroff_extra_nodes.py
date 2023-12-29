@@ -1,7 +1,7 @@
 # Name: additional_nodes
 # Coder: Marco Janssen (twitter @marc0janssen)
-# date: 2023-12-27 19:28:00
-# update: 2023-12-27 19:28:00
+# date: 2023-12-29 14:07:00
+# update: 2023-12-29 14:07:00
 
 import logging
 import sys
@@ -11,7 +11,6 @@ import socket
 import subprocess
 
 from datetime import datetime
-from wakeonlan import send_magic_packet
 from chump import Application
 
 
@@ -53,10 +52,26 @@ class ADDITIONAL_NODES():
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
-                # ADDITIONALNODES
-                self.node_mac_addresses = list(
-                    self.config['ADDITIONALNODES']
-                    ['NODE_MAC_ADDRESSES'].split(","))
+                # EXTRANODES
+                self.nodename = list(
+                    self.config['EXTRANODES']
+                    ['NODE_NAME'].split(","))
+
+                self.nodepwd = list(
+                    self.config['EXTRANODES']
+                    ['NODE_PWD'].split(","))
+
+                self.nodeuser = list(
+                    self.config['EXTRANODES']
+                    ['NODE_USER'].split(","))
+
+                self.nodeip = list(
+                    self.config['EXTRANODES']
+                    ['NODE_IP'].split(","))
+
+                self.nodemacaddress = list(
+                    self.config['EXTRANODES']
+                    ['NODE_MAC_ADDRESS'].split(","))
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -138,29 +153,48 @@ class ADDITIONAL_NODES():
 
             if result == 0:
                 if not self.dry_run:
-                    for mac_address in self.node_mac_addresses:
+
+                    numofnodes = len(self.nodename)
+
+                    for node in range(numofnodes):
                         try:
                             # is MAC is not active then send magic packet
                             if not self.is_mac_address_active(
-                                    mac_address.lower()):
-                                send_magic_packet(mac_address)
+                                    self.nodemacaddress[node].lower()):
+
+                                # Execute the shell command
+
+                                result = subprocess.run(
+                                    ["sshpass",
+                                        "-p",
+                                        f"{self.nodepwd[node]}",
+                                        "ssh",
+                                        "-t",
+                                        f"{self.nodeuser[node]}"
+                                        f"@{self.nodeip[node]}",
+                                        f"echo {self.nodepwd[node]}"
+                                        f"|sudo -S poweroff"],
+                                    capture_output=True, text=True)
+
+                                # Print the command output
+                                logging.info(result.stdout)
 
                                 self.message = \
                                     self.userPushover.send_message(
                                         message=f"PowerOn Additional Nodes - "
-                                        f"WOL command sent for "
-                                        f"{mac_address}\n"
+                                        f"SLEEP command sent for "
+                                        f"{self.nodename[node]}\n"
                                         )
 
                                 logging.info(
-                                    f"PowerOn - Sending WOL command for"
-                                    f" {mac_address}"
+                                    f"PowerOn - Sending SLEEP command for"
+                                    f" {self.nodename[node]}"
                                     )
 
                                 self.writeLog(
                                     False,
-                                    f"PowerOn - Sending WOL command for"
-                                    f" {mac_address}\n"
+                                    f"PowerOn - Sending SLEEP command for"
+                                    f" {self.nodename[node]}\n"
                                     )
 
                         except ValueError:

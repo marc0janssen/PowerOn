@@ -55,7 +55,6 @@ class POBE():
                 self.verbose_logging = True if (
                     self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
                     else False
-                self.localrootpwd = self.config['GENERAL']['LOCAL_ROOT_PWD']
 
                 # NODE
                 self.nodename = self.config['NODE']['NODE_NAME']
@@ -206,7 +205,7 @@ class POBE():
                                             result = subprocess.run(
                                                 ["sshpass",
                                                     "-p",
-                                                    f"{self.localrootpwd}",
+                                                    f"{self.nodepwd}",
                                                     "ssh",
                                                     "-t",
                                                     f"{self.nodeuser}"
