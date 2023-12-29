@@ -175,7 +175,7 @@ class ADDITIONAL_NODES():
                                         f"{self.nodepwd[node]}",
                                         "ssh",
                                         "-p",
-                                        f"{self.extranodesshport}",
+                                        f"{self.extranodesshport[node]}",
                                         "-t",
                                         f"{self.nodeuser[node]}"
                                         f"@{self.extranodeip[node]}",
@@ -188,7 +188,7 @@ class ADDITIONAL_NODES():
 
                                 self.message = \
                                     self.userPushover.send_message(
-                                        message=f"PowerOn Additional Nodes - "
+                                        message=f"Power off Extra Nodes - "
                                         f"SLEEP command sent for "
                                         f"{self.nodename[node]}\n"
                                         )
