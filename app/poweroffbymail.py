@@ -209,7 +209,7 @@ class POBE():
                                                  "-t",
                                                  f"{self.nodeuser}@\
                                                     {self.target_node}",
-                                                 F"echo {self.nodepwd}\
+                                                 f"echo {self.nodepwd}\
                                                  |sudo -S poweroff"],
                                                 capture_output=True, text=True)
 
