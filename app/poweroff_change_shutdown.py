@@ -215,7 +215,6 @@ class POBE():
                                                         break
 
                                                 new_text = '\n'.join(lines)
-                                                print(new_text)
 
                                                 try:
                                                     with open("/tmp/text.txt", 'w') as file:
