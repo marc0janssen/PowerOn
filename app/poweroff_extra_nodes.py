@@ -162,6 +162,10 @@ class ADDITIONAL_NODES():
 
                     for node in range(numofnodes):
                         try:
+                            
+                            print(self.is_mac_address_active(
+                                    self.nodemacaddress[node].lower()))
+
                             # is MAC is not active then send magic packet
                             if not self.is_mac_address_active(
                                     self.nodemacaddress[node].lower()):
