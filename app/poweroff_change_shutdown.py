@@ -377,7 +377,7 @@ class POBE():
                         self.writeLog(
                             False, "Poweron - Marking message for delete.\n")
 
-                        if not self.dry_run:
+                        # if not self.dry_run:
                             # imap.store(str(i), "+FLAGS", "\\Deleted")
 
                     else:
