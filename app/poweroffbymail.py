@@ -55,6 +55,13 @@ class POBE():
                 self.verbose_logging = True if (
                     self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
                     else False
+                self.localrootpwd = self.config['GENERAL']['LOCAL_ROOT_PWD']
+
+                # NODE
+                self.target_node = self.config['NODE']['TARGET_NODE']
+                self.target_port = int(self.config['NODE']['TARGET_PORT'])
+                self.nodeuser = self.config['NODE']['NODE_USER']
+                self.nodepwd = self.config['NODE']['NODE_PWD']
 
                 # MAIL
                 self.mail_port = int(
@@ -63,10 +70,6 @@ class POBE():
                 self.mail_login = self.config['MAIL']['MAIL_LOGIN']
                 self.mail_password = self.config['MAIL']['MAIL_PASSWORD']
                 self.mail_sender = self.config['MAIL']['MAIL_SENDER']
-
-                # POWERON
-                self.target_node = self.config['POWERON']['TARGET_NODE']
-                self.target_port = int(self.config['POWERON']['TARGET_PORT'])
 
                 # POWEROFF
                 self.keyword = self.config['POWEROFF']['KEYWORD']
@@ -198,10 +201,20 @@ class POBE():
                                     if not self.dry_run:
                                         try:
                                             # Execute the shell command
-                                            result = subprocess.run(["sshpass", "-p", "D#n13ll3", "ssh", "-t", "marco@192.168.178.201", "echo D#n13ll3|sudo -S reboot"], capture_output=True, text=True)
+                                            result = subprocess.run(
+                                                ["sshpass",
+                                                 "-p",
+                                                 f"{self.localrootpwd}",
+                                                 "ssh",
+                                                 "-t",
+                                                 f"{self.nodeuser}@\
+                                                    {self.target_node}",
+                                                 F"echo {self.nodepwd}\
+                                                 |sudo -S reboot"],
+                                                capture_output=True, text=True)
 
                                             # Print the command output
-                                            print(result.stdout)
+                                            logging.info(result.stdout)
 
                                         except ValueError:
                                             logging.error(

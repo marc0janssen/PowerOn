@@ -58,6 +58,12 @@ class POBE():
                     self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
                     else False
 
+                # NODE
+                self.macaddress = self.config['NODE']['MACADDRESS']\
+                    .replace(":", "-").lower()
+                self.target_node = self.config['NODE']['TARGET_NODE']
+                self.target_port = int(self.config['NODE']['TARGET_PORT'])
+
                 # MAIL
                 self.mail_port = int(
                     self.config['MAIL']['MAIL_PORT'])
@@ -70,10 +76,6 @@ class POBE():
                 self.keyword = self.config['POWERON']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['POWERON']['ALLOWED_SENDERS'].split(","))
-                self.macaddress = self.config['POWERON']['MACADDRESS']\
-                    .replace(":", "-").lower()
-                self.target_node = self.config['POWERON']['TARGET_NODE']
-                self.target_port = int(self.config['POWERON']['TARGET_PORT'])
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']

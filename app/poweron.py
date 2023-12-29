@@ -48,11 +48,11 @@ class POWERON():
                     self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
                     else False
 
-                # POWERON
-                self.macaddress = self.config['POWERON']['MACADDRESS']\
+                # NODE
+                self.macaddress = self.config['NODE']['MACADDRESS']\
                     .replace(":", "-").lower()
-                self.target_node = self.config['POWERON']['TARGET_NODE']
-                self.target_port = int(self.config['POWERON']['TARGET_PORT'])
+                self.target_node = self.config['NODE']['TARGET_NODE']
+                self.target_port = int(self.config['NODE']['TARGET_PORT'])
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
