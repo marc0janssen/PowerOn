@@ -58,8 +58,8 @@ class POBE():
                 self.localrootpwd = self.config['GENERAL']['LOCAL_ROOT_PWD']
 
                 # NODE
-                self.target_node = self.config['NODE']['TARGET_NODE']
-                self.target_port = int(self.config['NODE']['TARGET_PORT'])
+                self.nodeip = self.config['NODE']['NODE_IP']
+                self.nodeport = int(self.config['NODE']['NODE_PORT'])
                 self.nodeuser = self.config['NODE']['NODE_USER']
                 self.nodepwd = self.config['NODE']['NODE_PWD']
 
@@ -196,7 +196,7 @@ class POBE():
                                 sock = socket.socket(
                                     socket.AF_INET, socket.SOCK_STREAM)
                                 result = sock.connect_ex(
-                                    (self.target_node, self.target_port))
+                                    (self.nodeip, self.nodeport))
                                 if result == 0:
                                     if not self.dry_run:
                                         try:
@@ -209,7 +209,7 @@ class POBE():
                                                     "ssh",
                                                     "-t",
                                                     f"{self.nodeuser}"
-                                                    f"@{self.target_node}",
+                                                    f"@{self.nodeip}",
                                                     f"echo {self.nodepwd}"
                                                     f"|sudo -S poweroff"],
                                                 capture_output=True, text=True)

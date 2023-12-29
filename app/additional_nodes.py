@@ -50,8 +50,8 @@ class ADDITIONAL_NODES():
                     else False
 
                 # NODE
-                self.target_node = self.config['NODE']['TARGET_NODE']
-                self.target_port = int(self.config['NODE']['TARGET_PORT'])
+                self.nodeip = self.config['NODE']['NODE_IP']
+                self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
                 # ADDITIONALNODES
                 self.target_mac_addresses = list(
@@ -133,7 +133,7 @@ class ADDITIONAL_NODES():
             sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(
-                (self.target_node, self.target_port))
+                (self.nodeip, self.nodeport))
             # Port is open of the master node
 
             if result == 0:

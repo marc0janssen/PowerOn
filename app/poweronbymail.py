@@ -59,9 +59,9 @@ class POBE():
                     else False
 
                 # NODE
-                self.macaddress = self.config['NODE']['MACADDRESS']\
+                self.macaddress = self.config['NODE']['NODE_MAC']\
                     .replace(":", "-").lower()
-                self.target_node = self.config['NODE']['TARGET_NODE']
+                self.nodeip = self.config['NODE']['NODE_IP']
                 self.target_port = int(self.config['NODE']['TARGET_PORT'])
 
                 # MAIL
@@ -197,7 +197,7 @@ class POBE():
                                 sock = socket.socket(
                                     socket.AF_INET, socket.SOCK_STREAM)
                                 result = sock.connect_ex(
-                                    (self.target_node, self.target_port))
+                                    (self.nodeip, self.target_port))
                                 if result != 0:
                                     if not self.dry_run:
                                         try:

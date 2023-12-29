@@ -49,10 +49,10 @@ class POWERON():
                     else False
 
                 # NODE
-                self.macaddress = self.config['NODE']['MACADDRESS']\
+                self.macaddress = self.config['NODE']['NODE_MAC']\
                     .replace(":", "-").lower()
-                self.target_node = self.config['NODE']['TARGET_NODE']
-                self.target_port = int(self.config['NODE']['TARGET_PORT'])
+                self.nodeip = self.config['NODE']['NODE_IP']
+                self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -121,7 +121,7 @@ class POWERON():
             sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             result = sock.connect_ex(
-                (self.target_node, self.target_port))
+                (self.nodeip, self.nodeport))
             if result != 0:
                 if not self.dry_run:
                     try:
