@@ -276,7 +276,7 @@ class POBE():
                             )
 
                             if self.enabled:
-                                if result != 0:
+                                if result == 0:
                                     body = (
                                         f"Hi,\n\n {self.nodename} "
                                         f"wordt uitgezet, "
@@ -285,8 +285,8 @@ class POBE():
                                     )
                                 else:
                                     body = (
-                                        f"Hi,\n\n {self.nodename} is al aan, "
-                                        f"Je hoeft het 'power on' "
+                                        f"Hi,\n\n {self.nodename} is al uit, "
+                                        f"Je hoeft het 'power off' "
                                         f"commando niet meer te sturen.\n\n"
                                         f"Fijne dag!\n\n"
                                     )
