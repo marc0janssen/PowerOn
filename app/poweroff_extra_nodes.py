@@ -155,8 +155,6 @@ class ADDITIONAL_NODES():
                 (self.nodeip, self.nodeport))
             # Port is open of the master node
 
-            print(f"result {result}")
-
             if result != 0:
                 if not self.dry_run:
 
@@ -165,10 +163,8 @@ class ADDITIONAL_NODES():
                     for node in range(numofnodes):
                         try:
 
-                            print(self.is_mac_address_active(self.nodemacaddress[node].lower()))
-
                             # is MAC is not active then send magic packet
-                            if not self.is_mac_address_active(
+                            if self.is_mac_address_active(
                                     self.nodemacaddress[node].lower()):
 
                                 # Execute the shell command
