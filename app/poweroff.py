@@ -174,6 +174,43 @@ class POWEROFF():
                         )
                         sys.exit()
 
+                try:
+                    with open("/etc/crontabs/root", 'r') as file:
+                        content = file.read()
+                        file.close()
+
+                        lines = content.split('\n')
+
+                        for line in range(len(lines)):
+                            if "poweroff.py" in lines[line]:
+
+                                line_parts = lines[line].split()
+                                line_parts[1] = self.defaulthour
+
+                                lines[line] = ' '.join(line_parts)
+                                break
+
+                        new_text = '\n'.join(lines)
+
+                        try:
+                            with open("/etc/crontabs/root", 'w') as file:
+                                file.write(new_text)
+                                file.close()
+
+                        except IOError:
+                            logging.error(
+                                "Error writing the "
+                                "file /etc/crontabs/root.")
+
+                except FileNotFoundError:
+                    logging.error(
+                        "File not found - "
+                        "/etc/crontabs/root.")
+                except IOError:
+                    logging.error(
+                        "Error reading the"
+                        " file /etc/crontabs/root.")
+
             else:
                 logging.info(
                     "PowerOff - Nodes already down"
@@ -192,43 +229,6 @@ class POWEROFF():
                 False,
                 "PowerOff - Service is disabled by cron\n"
             )
-
-        try:
-            with open("/etc/crontabs/root", 'r') as file:
-                content = file.read()
-                file.close()
-
-                lines = content.split('\n')
-
-                for line in range(len(lines)):
-                    if "poweroff.py" in lines[line]:
-
-                        line_parts = lines[line].split()
-                        line_parts[1] = self.defaulthour
-
-                        lines[line] = ' '.join(line_parts)
-                        break
-
-                new_text = '\n'.join(lines)
-
-                try:
-                    with open("/etc/crontabs/root", 'w') as file:
-                        file.write(new_text)
-                        file.close()
-
-                except IOError:
-                    logging.error(
-                        "Error writing the "
-                        "file /etc/crontabs/root.")
-
-        except FileNotFoundError:
-            logging.error(
-                "File not found - "
-                "/etc/crontabs/root.")
-        except IOError:
-            logging.error(
-                "Error reading the"
-                " file /etc/crontabs/root.")
 
 
 if __name__ == '__main__':
