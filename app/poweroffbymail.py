@@ -201,6 +201,12 @@ class POBE():
                                     if not self.dry_run:
                                         try:
                                             # Execute the shell command
+
+                                            print(self.localrootpwd)
+                                            print(self.nodeuser)
+                                            print(self.target_node)
+                                            print(self.nodepwd)
+
                                             result = subprocess.run(
                                                 ["sshpass",
                                                  "-p",
