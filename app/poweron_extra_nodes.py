@@ -1,4 +1,4 @@
-# Name: additional_nodes
+# Name: poweron_extra_nodes
 # Coder: Marco Janssen (twitter @marc0janssen)
 # date: 2023-12-27 19:28:00
 # update: 2023-12-27 19:28:00
@@ -15,7 +15,7 @@ from wakeonlan import send_magic_packet
 from chump import Application
 
 
-class ADDITIONAL_NODES():
+class EXTRA_NODES():
 
     def __init__(self):
         logging.basicConfig(
@@ -28,7 +28,7 @@ class ADDITIONAL_NODES():
 
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"
-        self.log_file = "additionalnodes.log"
+        self.log_file = "extranodes.log"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
         self.log_filePath = f"{log_dir}{self.log_file}"
@@ -54,7 +54,10 @@ class ADDITIONAL_NODES():
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
                 # EXTRANODES
-                self.node_mac_address = list(
+                self.nodename = list(
+                    self.config['EXTRANODES']
+                    ['NODE_NAME'].split(","))
+                self.nodemacaddress = list(
                     self.config['EXTRANODES']
                     ['NODE_MAC_ADDRESS'].split(","))
 
@@ -138,29 +141,35 @@ class ADDITIONAL_NODES():
 
             if result == 0:
                 if not self.dry_run:
-                    for mac_address in self.node_mac_address:
+                    numofnodes = len(self.nodename)
+
+                    for node in range(numofnodes):
                         try:
                             # is MAC is not active then send magic packet
                             if not self.is_mac_address_active(
-                                    mac_address.lower()):
-                                send_magic_packet(mac_address)
+                                    self.nodemacaddress[node].lower()):
+
+                                send_magic_packet(self.nodemacaddress[node])
 
                                 self.message = \
                                     self.userPushover.send_message(
-                                        message=f"PowerOn Additional Nodes - "
+                                        message=f"PowerOn Extra Nodes - "
                                         f"WOL command sent for "
-                                        f"{mac_address}\n"
+                                        f"{self.nodename[node]} - "
+                                        f"{self.nodemacaddress[node]}\n"
                                         )
 
                                 logging.info(
                                     f"PowerOn - Sending WOL command for"
-                                    f" {mac_address}"
+                                    f"{self.nodename[node]} - "
+                                    f"{self.nodemacaddress[node]}"
                                     )
 
                                 self.writeLog(
                                     False,
                                     f"PowerOn - Sending WOL command for"
-                                    f" {mac_address}\n"
+                                    f"{self.nodename[node]} - "
+                                    f"{self.nodemacaddress[node]}\n"
                                     )
 
                         except ValueError:
@@ -171,6 +180,6 @@ class ADDITIONAL_NODES():
 
 if __name__ == '__main__':
 
-    an = ADDITIONAL_NODES()
-    an.run()
-    an = None
+    extranodes = EXTRA_NODES()
+    extranodes.run()
+    extranodes = None

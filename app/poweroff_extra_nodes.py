@@ -1,4 +1,4 @@
-# Name: additional_nodes
+# Name: poweroff_extra_nodes
 # Coder: Marco Janssen (twitter @marc0janssen)
 # date: 2023-12-29 14:07:00
 # update: 2023-12-29 14:07:00
@@ -14,7 +14,7 @@ from datetime import datetime
 from chump import Application
 
 
-class ADDITIONAL_NODES():
+class EXTRA_NODES():
 
     def __init__(self):
         logging.basicConfig(
@@ -27,7 +27,7 @@ class ADDITIONAL_NODES():
 
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"
-        self.log_file = "additionalnodes.log"
+        self.log_file = "extranodes.log"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
         self.log_filePath = f"{log_dir}{self.log_file}"
@@ -56,23 +56,18 @@ class ADDITIONAL_NODES():
                 self.nodename = list(
                     self.config['EXTRANODES']
                     ['NODE_NAME'].split(","))
-
                 self.nodepwd = list(
                     self.config['EXTRANODES']
                     ['NODE_PWD'].split(","))
-
                 self.nodeuser = list(
                     self.config['EXTRANODES']
                     ['NODE_USER'].split(","))
-
                 self.extranodeip = list(
                     self.config['EXTRANODES']
                     ['NODE_IP'].split(","))
-
                 self.extranodesshport = list(
                     self.config['EXTRANODES']
                     ['NODE_SSHPORT'].split(","))
-
                 self.nodemacaddress = list(
                     self.config['EXTRANODES']
                     ['NODE_MAC_ADDRESS'].split(","))
@@ -188,7 +183,7 @@ class ADDITIONAL_NODES():
 
                                 self.message = \
                                     self.userPushover.send_message(
-                                        message=f"Power off Extra Nodes - "
+                                        message=f"PowerOff Extra Nodes - "
                                         f"SLEEP command sent for "
                                         f"{self.nodename[node]}\n"
                                         )
@@ -212,6 +207,6 @@ class ADDITIONAL_NODES():
 
 if __name__ == '__main__':
 
-    an = ADDITIONAL_NODES()
-    an.run()
-    an = None
+    extranodes = EXTRA_NODES()
+    extranodes.run()
+    extranodes = None
