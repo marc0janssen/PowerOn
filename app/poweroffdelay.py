@@ -1,4 +1,4 @@
-# Name: ppweroff_change_shutdown
+# Name: ppweroffdelay
 # Coder: Marco Janssen (twitter @marc0janssen)
 # date: 2023-12-29 21:34:00
 # update: 2023-12-29 21:34:00
@@ -17,13 +17,11 @@ from datetime import datetime
 from email.header import decode_header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# from email.mime.base import MIMEBase
-# from email import encoders
 from socket import gaierror
 from chump import Application
 
 
-class POBE():
+class POD():
 
     def __init__(self):
         logging.basicConfig(
@@ -137,7 +135,7 @@ class POBE():
 
             self.writeLog(
                 False,
-                "Poweron - Dry run.\n"
+                "PowerOff - Dry run.\n"
             )
 
         # create an IMAP4 class with SSL
@@ -184,11 +182,11 @@ class POBE():
 
                         if self.verbose_logging:
                             logging.info(
-                                f"Poweron - Found matching subject from "
+                                f"PowerOff - Found matching subject from "
                                 f"{match.group(0)}"
                             )
                         self.writeLog(
-                            False, f"Poweron - Found matching subject from "
+                            False, f"PowerOff - Found matching subject from "
                             f"{match.group(0)}\n")
 
                         if match.group(0) in self.allowed_senders:
@@ -210,7 +208,7 @@ class POBE():
                                                 lines = content.split('\n')
 
                                                 for i in range(len(lines)):
-                                                    if "poweron.py" in \
+                                                    if "poweroff.py" in \
                                                             lines[i]:
                                                         line_parts = \
                                                             lines[i].split()
@@ -250,41 +248,41 @@ class POBE():
                                                 " file /etc/crontabs/root.")
 
                                     logging.info(
-                                        f"Poweron - Sending WOL command by"
+                                        f"PowerOff - PowerOff delay by"
                                         f" {match.group(0)}"
                                         )
                                     self.writeLog(
                                         False,
-                                        f"Poweron - Sending WOL command by"
+                                        f"PowerOff - PowerOff delay by"
                                         f" {match.group(0)}\n"
                                     )
 
                                     self.message = \
                                         self.userPushover.send_message(
-                                            message=f"PowerOnByEmail - "
-                                            f"WOL command sent by "
+                                            message=f"PowerOffDelay - "
+                                            f"PowerOff Delay sent by "
                                             f"{match.group(0)}\n"
                                             )
 
                                 else:
                                     logging.info(
-                                        f"Poweron - Nodes already running"
+                                        f"PowerOff - Nodes not running"
                                         f" by {match.group(0)}"
                                     )
                                     self.writeLog(
                                         False,
-                                        f"Poweron - Nodes already running by "
+                                        f"PowerOff - Nodes not running by "
                                         f"{match.group(0)}\n"
                                     )
                             else:
                                 if self.verbose_logging:
                                     logging.info(
-                                        f"Poweron - Service is disabled by "
+                                        f"PowerOff - Service is disabled by "
                                         f"{match.group(0)}"
                                     )
                                 self.writeLog(
                                     False,
-                                    f"Poweron - Service is disabled by "
+                                    f"PowerOff - Service is disabled by "
                                     f"{match.group(0)}\n"
                                 )
 
@@ -295,7 +293,7 @@ class POBE():
                             message["From"] = sender_email
                             message['To'] = receiver_email
                             message['Subject'] = (
-                                f"Poweron - {self.nodename}"
+                                f"PowerOff - {self.nodename}"
                             )
 
                             if self.enabled:
@@ -341,13 +339,13 @@ class POBE():
                                 email_session.quit()
                                 if self.verbose_logging:
                                     logging.info(
-                                        f"Poweron - Mail Sent to "
+                                        f"PowerOff - Mail Sent to "
                                         f"{receiver_email}."
                                     )
 
                                 self.writeLog(
                                     False,
-                                    f"Poweron - Mail Sent to "
+                                    f"PowerOff - Mail Sent to "
                                     f"{receiver_email}.\n"
                                 )
 
@@ -367,35 +365,35 @@ class POBE():
                         else:
                             if self.verbose_logging:
                                 logging.info(
-                                    f"Poweron - sender not in"
+                                    f"PowerOff - sender not in"
                                     f" list {match.group(0)}."
                                     )
                             self.writeLog(
                                 False,
-                                f"Poweron - sender not in list "
+                                f"PowerOff - sender not in list "
                                 f"{match.group(0)}.\n"
                             )
 
                         if self.verbose_logging:
                             logging.info(
-                                "Poweron - Marking message for delete.")
+                                "PowerOff - Marking message for delete.")
                         self.writeLog(
-                            False, "Poweron - Marking message for delete.\n")
+                            False, "PowerOff - Marking message for delete.\n")
 
-                        # if not self.dry_run:
-                            # imap.store(str(i), "+FLAGS", "\\Deleted")
+                        if not self.dry_run:
+                            imap.store(str(i), "+FLAGS", "\\Deleted")
 
                     else:
                         if self.verbose_logging:
                             logging.info(
-                                f"Poweron - Subject not recognized. "
+                                f"PowerOff - Subject not recognized. "
                                 f"Skipping message. "
                                 f"{match.group(0)}"
                             )
 
                             self.writeLog(
                                 False,
-                                f"Poweron - Subject not recognized. "
+                                f"PowerOff - Subject not recognized. "
                                 f"Skipping message. {match.group(0)}\n"
                             )
 
@@ -407,6 +405,6 @@ class POBE():
 
 if __name__ == '__main__':
 
-    poweronbyemail = POBE()
-    poweronbyemail.run()
-    poweronbyemail = None
+    poweroffdelay = POD()
+    poweroffdelay.run()
+    poweroffdelay = None
