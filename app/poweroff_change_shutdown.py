@@ -203,7 +203,6 @@ class POBE():
                                         try:
                                             with open("/etc/crontabs/root", 'r') as file:
                                                 content = file.read()
-                                                file.close()
 
                                                 lines = content.split('\n')
 
@@ -219,7 +218,6 @@ class POBE():
                                                 try:
                                                     with open("/tmp/text.txt", 'w') as file:
                                                         file.write(new_text)
-                                                        file.close()
 
                                                 except IOError:
                                                     logging.error("Error writing the file /etc/crontabs/root.")
