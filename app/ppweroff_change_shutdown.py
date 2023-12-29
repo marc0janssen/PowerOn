@@ -1,7 +1,7 @@
-# Name: poweronbymail
+# Name: ppweroff_change_shutdown
 # Coder: Marco Janssen (twitter @marc0janssen)
-# date: 2023-01-04 20:08:00
-# update: 2023-12-28 12:47:00
+# date: 2023-12-29 21:34:00
+# update: 2023-12-29 21:34:00
 
 import imaplib
 import email
@@ -15,7 +15,6 @@ import socket
 
 from datetime import datetime
 from email.header import decode_header
-from wakeonlan import send_magic_packet
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 # from email.mime.base import MIMEBase
@@ -73,10 +72,10 @@ class POBE():
                 self.mail_password = self.config['MAIL']['MAIL_PASSWORD']
                 self.mail_sender = self.config['MAIL']['MAIL_SENDER']
 
-                # POWERON
-                self.keyword = self.config['POWERON']['KEYWORD']
+                # EXTENDTIME
+                self.keyword = self.config['EXTENDTIME']['KEYWORD']
                 self.allowed_senders = list(
-                    self.config['POWERON']['ALLOWED_SENDERS'].split(","))
+                    self.config['EXTENDTIME']['ALLOWED_SENDERS'].split(","))
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -181,7 +180,7 @@ class POBE():
 
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
-                    if str.lower(subject) == self.keyword.lower():
+                    if self.keyword.lower() in str.lower(subject):
 
                         if self.verbose_logging:
                             logging.info(
@@ -199,16 +198,36 @@ class POBE():
                                     socket.AF_INET, socket.SOCK_STREAM)
                                 result = sock.connect_ex(
                                     (self.nodeip, self.nodeport))
-                                if result != 0:
+                                if result == 0:  # is main node running?
                                     if not self.dry_run:
                                         try:
-                                            send_magic_packet(self.macaddress)
+                                            with open("/etc/crontab/root", 'r') as file:
+                                                content = file.read()
+                                                print(content)
 
-                                        except ValueError:
-                                            logging.error(
-                                                "Invalid MAC-address in INI."
-                                            )
-                                            sys.exit()
+                                                lines = content.split('\n')
+
+                                                for i in range(len(lines)):
+                                                    if "poweron.py" in lines[i]:
+                                                        line_parts = lines[i].split()
+                                                        line_parts[1] = '101010110'
+                                                        lines[i] = ' '.join(line_parts)
+                                                        break
+
+                                                new_text = '\n'.join(lines)
+                                                print(new_text)
+
+                                                try:
+                                                    with open("/tmp/text.txt", 'w') as file:
+                                                        file.write(new_text)
+
+                                                except IOError:
+                                                    logging.error("Error writing the file /etc/crontab/root.")
+
+                                        except FileNotFoundError:
+                                            logging.error("File not found - /etc/crontab/root.")
+                                        except IOError:
+                                            logging.error("Error reading the file /etc/crontab/root.")
 
                                     logging.info(
                                         f"Poweron - Sending WOL command by"

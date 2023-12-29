@@ -180,7 +180,7 @@ class POBE():
 
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
 
-                    if str.lower(subject) == self.keyword:
+                    if str.lower(subject) == self.keyword.lower():
 
                         if self.verbose_logging:
                             logging.info(
