@@ -69,6 +69,10 @@ class ADDITIONAL_NODES():
                     self.config['EXTRANODES']
                     ['NODE_IP'].split(","))
 
+                self.extranodesshport = list(
+                    self.config['EXTRANODES']
+                    ['NODE_SSHPORT'].split(","))
+
                 self.nodemacaddress = list(
                     self.config['EXTRANODES']
                     ['NODE_MAC_ADDRESS'].split(","))
@@ -169,6 +173,8 @@ class ADDITIONAL_NODES():
                                         "-p",
                                         f"{self.nodepwd[node]}",
                                         "ssh",
+                                        "-p",
+                                        f"{self.extranodesshport}",
                                         "-t",
                                         f"{self.nodeuser[node]}"
                                         f"@{self.extranodeip[node]}",

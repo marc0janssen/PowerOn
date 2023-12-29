@@ -60,6 +60,7 @@ class POBE():
                 self.nodename = self.config['NODE']['NODE_NAME']
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
+                self.nodesshport = int(self.config['NODE']['NODE_SSHPORT'])
                 self.nodeuser = self.config['NODE']['NODE_USER']
                 self.nodepwd = self.config['NODE']['NODE_PWD']
 
@@ -207,6 +208,8 @@ class POBE():
                                                     "-p",
                                                     f"{self.nodepwd}",
                                                     "ssh",
+                                                    "-p",
+                                                    f"{self.nodesshport}",
                                                     "-t",
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
