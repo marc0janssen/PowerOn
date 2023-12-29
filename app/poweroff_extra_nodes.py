@@ -162,7 +162,7 @@ class ADDITIONAL_NODES():
 
                     for node in range(numofnodes):
                         try:
-                            
+
                             print(self.is_mac_address_active(
                                     self.nodemacaddress[node].lower()))
 
