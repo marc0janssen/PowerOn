@@ -201,7 +201,7 @@ class POBE():
                                 if result == 0:  # is main node running?
                                     if not self.dry_run:
                                         try:
-                                            with open("/etc/crontab/root", 'r') as file:
+                                            with open("/etc/crontabs/root", 'r') as file:
                                                 content = file.read()
                                                 print(content)
 
