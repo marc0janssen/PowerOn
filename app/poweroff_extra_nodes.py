@@ -65,7 +65,7 @@ class ADDITIONAL_NODES():
                     self.config['EXTRANODES']
                     ['NODE_USER'].split(","))
 
-                self.nodeip = list(
+                self.extranodeip = list(
                     self.config['EXTRANODES']
                     ['NODE_IP'].split(","))
 
@@ -171,7 +171,7 @@ class ADDITIONAL_NODES():
                                         "ssh",
                                         "-t",
                                         f"{self.nodeuser[node]}"
-                                        f"@{self.nodeip[node]}",
+                                        f"@{self.extranodeip[node]}",
                                         f"echo {self.nodepwd[node]}"
                                         f"|sudo -S poweroff"],
                                     capture_output=True, text=True)
