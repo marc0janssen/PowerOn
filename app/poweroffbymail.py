@@ -198,7 +198,7 @@ class POBE():
                                     if not self.dry_run:
                                         try:
                                             # Execute the shell command
-                                            result = subprocess.run(["sshpass -pD#n13ll3 ssh -t marco@192.168.178.201 'echo D#n13ll3|sudo reboot’"], capture_output=True, text=True)
+                                            result = subprocess.run(["sshpass -pD#n13ll3 ssh -t marco@192.168.178.201 'echo D#n13ll3|sudo -S reboot'"], capture_output=True, text=True)
 
                                             # Print the command output
                                             print(result.stdout)
