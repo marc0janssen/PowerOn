@@ -252,8 +252,6 @@ class POBE():
                             sender_email = self.mail_sender
                             receiver_email = match.group(0)
 
-                            print(receiver_email)
-
                             message = MIMEMultipart()
                             message["From"] = sender_email
                             message['To'] = receiver_email
@@ -312,7 +310,7 @@ class POBE():
                                     self.mail_login, self.mail_password)
                                 email_session.sendmail(
                                     sender_email,
-                                    receiver_email,
+                                    [receiver_email],
                                     my_message
                                     )
                                 email_session.quit()

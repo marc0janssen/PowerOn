@@ -363,7 +363,7 @@ class POBE():
                                     self.mail_login, self.mail_password)
                                 email_session.sendmail(
                                     sender_email,
-                                    receiver_email,
+                                    [receiver_email],
                                     my_message
                                     )
                                 email_session.quit()
