@@ -76,6 +76,8 @@ class POD():
                 self.keyword = self.config['EXTENDTIME']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['EXTENDTIME']['ALLOWED_SENDERS'].split(","))
+                self.eh = \
+                    self.config['EXTENDTIME']['EXTEND_TIME_IN_HOURS']
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -223,7 +225,9 @@ class POD():
                                                         line_parts[1] = \
                                                             str((int(
                                                                 line_parts[1])
-                                                                  + 2) % 24)
+                                                                  +
+                                                                  self.eh)
+                                                                % 24)
 
                                                         self.shutdowntime = \
                                                             f"{line_parts[1]}:"

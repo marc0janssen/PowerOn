@@ -79,6 +79,8 @@ class POBE():
 
                 # EXTENDTIME
                 self.defaulthour = self.config['EXTENDTIME']['DEFAULT_HOUR']
+                self.defaultminutes = \
+                    self.config['EXTENDTIME']['DEFAULT_MINUTES']
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -245,6 +247,8 @@ class POBE():
                                                         lines[line].split()
                                                     line_parts[1] = \
                                                         self.defaulthour
+                                                    line_parts[0] = \
+                                                        self.defaultminutes
 
                                                     lines[line] = \
                                                         ' '.join(line_parts)
