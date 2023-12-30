@@ -235,9 +235,7 @@ class POD():
                                                         print(line_parts[2])
                                                         print(line_parts[3])
 
-                                                        self.shutdowntime = \
-                                                            f"{line_parts[1]}:"
-                                                        f"{line_parts[0]}"
+                                                        self.shutdowntime = f"{line_parts[1]}:{line_parts[0]}"
 
                                                         lines[line] = ' '.join(
                                                             line_parts)
