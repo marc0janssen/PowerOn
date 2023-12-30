@@ -230,8 +230,8 @@ class POD():
                                                                 % 24)
 
                                                         self.shutdowntime = (
-                                                            f"{line_parts[1]}:"
-                                                            f"{line_parts[0]}"
+                                                            f"{line_parts[1].zfill(2)}:"
+                                                            f"{line_parts[0].zfill(2)}"
                                                             )
 
                                                         lines[line] = ' '.join(
