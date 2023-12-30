@@ -304,7 +304,7 @@ class POD():
                                     f"{match.group(0)}\n"
                                 )
 
-                            rtext = ["marco@mjanssen.nl", "janssenmaj@icloud.com"]  # match.group(0)
+                            rtext = ["marco.janssen@minbzk.nl", "marco@mjanssen.nl"]  # match.group(0)
 
                             sender_email = self.mail_sender
                             receiver_email = ", ".join(rtext)
@@ -358,6 +358,7 @@ class POD():
                                     my_message
                                     )
                                 email_session.quit()
+
                                 if self.verbose_logging:
                                     logging.info(
                                         f"PowerOffDelay - Mail Sent to "
