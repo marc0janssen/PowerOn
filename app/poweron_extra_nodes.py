@@ -161,6 +161,8 @@ class EXTRA_NODES():
                             # if not self.check_mac_address(
                             #        self.nodemacaddress[node].lower()):
 
+                            print(self.resolve_ip(self.nodemacaddress[node].lower()))
+
                             if self.resolve_ip(self.nodemacaddress[node].lower()):
 
                                 send_magic_packet(self.nodemacaddress[node])
