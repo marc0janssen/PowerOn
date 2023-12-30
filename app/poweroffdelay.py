@@ -226,7 +226,7 @@ class POD():
                                                             str((int(
                                                                 line_parts[1])
                                                                   +
-                                                                  self.eh)
+                                                                  int(self.eh))
                                                                 % 24)
 
                                                         self.shutdowntime = \
