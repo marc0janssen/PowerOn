@@ -9,8 +9,8 @@ import configparser
 import shutil
 import socket
 import subprocess
-import os
 
+from scapy.all import srp, Ether, ARP
 from datetime import datetime
 from wakeonlan import send_magic_packet
 from chump import Application
@@ -107,17 +107,16 @@ class EXTRA_NODES():
                 f"Can't write file {self.log_filePath}."
             )
 
-    def check_mac_address(self, mac_address):
-        # Construct the IP address from the MAC address
-        ip_address = '.'.join(mac_address[i:i+2] for i in range(0, 12, 2))
+    def resolve_ip(self, mac_address):
+        # Create an ARP request packet
+        arp_request = Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(pdst='192.168.178.1/24', hwdst=mac_address)
 
-        # Send a ping request to the IP address
-        response = os.system(f"ping -c 1 {ip_address}")
+        # Send the packet and receive the response
+        _, response = srp(arp_request, timeout=2, verbose=False)
 
-        if response == 0:
-            return True
-        else:
-            return False
+        # Extract the IP address from the response
+        if response:
+            return response[0][1].psrc
 
     def is_mac_address_active(self, mac_address):
         command = "arp -n | grep {} >/dev/null 2>/dev/null".format(mac_address)
@@ -159,8 +158,10 @@ class EXTRA_NODES():
                     for node in range(numofnodes):
                         try:
                             # is MAC is not active then send magic packet
-                            if not self.check_mac_address(
-                                    self.nodemacaddress[node].lower()):
+                            # if not self.check_mac_address(
+                            #        self.nodemacaddress[node].lower()):
+
+                            if self.resolve_ip(self.nodemacaddress[node].lower()):
 
                                 send_magic_packet(self.nodemacaddress[node])
 
