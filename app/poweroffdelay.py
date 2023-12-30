@@ -137,7 +137,7 @@ class POD():
 
             self.writeLog(
                 False,
-                "PowerOff - Dry run.\n"
+                "PowerOffDelay - Dry run.\n"
             )
 
         # create an IMAP4 class with SSL
@@ -184,11 +184,12 @@ class POD():
 
                         if self.verbose_logging:
                             logging.info(
-                                f"PowerOff - Found matching subject from "
+                                f"PowerOffDelay - Found matching subject from "
                                 f"{match.group(0)}"
                             )
                         self.writeLog(
-                            False, f"PowerOff - Found matching subject from "
+                            False, f"PowerOffDelay - Found matching "
+                            f"subject from "
                             f"{match.group(0)}\n")
 
                         if match.group(0) in self.allowed_senders:
@@ -258,41 +259,43 @@ class POD():
                                                 " file /etc/crontabs/root.")
 
                                     logging.info(
-                                        f"PowerOff - PowerOff delay by"
+                                        f"PowerOffDelay - PowerOffdelay by"
                                         f" {match.group(0)}"
                                         )
                                     self.writeLog(
                                         False,
-                                        f"PowerOff - PowerOff delay by"
+                                        f"PowerOffDelay - PowerOffdelay by"
                                         f" {match.group(0)}\n"
                                     )
 
                                     self.message = \
                                         self.userPushover.send_message(
                                             message=f"PowerOffDelay - "
-                                            f"PowerOff Delay sent by "
+                                            f"PowerOffDelay sent by "
                                             f"{match.group(0)}\n"
                                             )
 
                                 else:
                                     logging.info(
-                                        f"PowerOff - Nodes not running"
+                                        f"PowerOffDelay - Nodes not running"
                                         f" by {match.group(0)}"
                                     )
                                     self.writeLog(
                                         False,
-                                        f"PowerOff - Nodes not running by "
+                                        f"PowerOffDelay - Nodes "
+                                        f"not running by "
                                         f"{match.group(0)}\n"
                                     )
                             else:
                                 if self.verbose_logging:
                                     logging.info(
-                                        f"PowerOff - Service is disabled by "
+                                        f"PowerOffDelay - Service "
+                                        f"is disabled by "
                                         f"{match.group(0)}"
                                     )
                                 self.writeLog(
                                     False,
-                                    f"PowerOff - Service is disabled by "
+                                    f"PowerOffDelay - Service is disabled by "
                                     f"{match.group(0)}\n"
                                 )
 
@@ -303,7 +306,7 @@ class POD():
                             message["From"] = sender_email
                             message['To'] = receiver_email
                             message['Subject'] = (
-                                f"PowerOff - {self.nodename}"
+                                f"PowerOffDelay - {self.nodename}"
                             )
 
                             if self.enabled:
@@ -350,13 +353,13 @@ class POD():
                                 email_session.quit()
                                 if self.verbose_logging:
                                     logging.info(
-                                        f"PowerOff - Mail Sent to "
+                                        f"PowerOffDelay - Mail Sent to "
                                         f"{receiver_email}."
                                     )
 
                                 self.writeLog(
                                     False,
-                                    f"PowerOff - Mail Sent to "
+                                    f"PowerOffDelay - Mail Sent to "
                                     f"{receiver_email}.\n"
                                 )
 
@@ -376,20 +379,21 @@ class POD():
                         else:
                             if self.verbose_logging:
                                 logging.info(
-                                    f"PowerOff - sender not in"
+                                    f"PowerOffDelay - sender not in"
                                     f" list {match.group(0)}."
                                     )
                             self.writeLog(
                                 False,
-                                f"PowerOff - sender not in list "
+                                f"PowerOffDelay - sender not in list "
                                 f"{match.group(0)}.\n"
                             )
 
                         if self.verbose_logging:
                             logging.info(
-                                "PowerOff - Marking message for delete.")
+                                "PowerOffDelay - Marking message for delete.")
                         self.writeLog(
-                            False, "PowerOff - Marking message for delete.\n")
+                            False, "PowerOffDelay - "
+                            "Marking message for delete.\n")
 
                         if not self.dry_run:
                             imap.store(str(i), "+FLAGS", "\\Deleted")
@@ -397,14 +401,14 @@ class POD():
                     else:
                         if self.verbose_logging:
                             logging.info(
-                                f"PowerOff - Subject not recognized. "
+                                f"PowerOffDelay - Subject not recognized. "
                                 f"Skipping message. "
                                 f"{match.group(0)}"
                             )
 
                             self.writeLog(
                                 False,
-                                f"PowerOff - Subject not recognized. "
+                                f"PowerOffDelay - Subject not recognized. "
                                 f"Skipping message. {match.group(0)}\n"
                             )
 
