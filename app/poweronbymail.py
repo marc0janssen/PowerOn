@@ -252,6 +252,8 @@ class POBE():
                             sender_email = self.mail_sender
                             receiver_email = match.group(0)
 
+                            print(receiver_email)
+
                             message = MIMEMultipart()
                             message["From"] = sender_email
                             message['To'] = receiver_email

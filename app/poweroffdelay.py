@@ -304,10 +304,8 @@ class POD():
                                     f"{match.group(0)}\n"
                                 )
 
-                            rtext = ["marco.janssen@minbzk.nl", "marco@mjanssen.nl"]  # match.group(0)
-
                             sender_email = self.mail_sender
-                            receiver_email = ", ".join(rtext)
+                            receiver_email = ", ".join(self.allowed_senders)
 
                             message = MIMEMultipart()
                             message["From"] = sender_email
@@ -354,7 +352,7 @@ class POD():
                                     self.mail_login, self.mail_password)
                                 email_session.sendmail(
                                     sender_email,
-                                    rtext,
+                                    self.allowed_senders,
                                     my_message
                                     )
                                 email_session.quit()
