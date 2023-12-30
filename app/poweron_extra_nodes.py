@@ -160,7 +160,7 @@ class EXTRA_NODES():
                             # if not self.check_mac_address(
                             #        self.nodemacaddress[node].lower()):
 
-                            if not self.is_active_ip(self.nodeipaddress[node]):
+                            if self.is_active_ip(self.nodeipaddress[node]):
 
                                 send_magic_packet(self.nodemacaddress[node])
 
