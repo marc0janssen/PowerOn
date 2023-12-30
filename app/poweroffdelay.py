@@ -304,12 +304,11 @@ class POD():
                                     f"{match.group(0)}\n"
                                 )
 
-                            rtext = ["marco@mjanssen.nl",
-                                     "janssenmaj@gmail.com",
-                                     "hij@daniellemarco.nl"]  # match.group(0)
+                            receiver_email = ["marco@mjanssen.nl", "janssenmaj@gmail.com", "hij@daniellemarco.nl"]  # match.group(0)
 
                             sender_email = self.mail_sender
-                            receiver_email = ", ".join(rtext)
+                            # receiver_email = ", ".join(rtext)
+
                             message = MIMEMultipart()
                             message["From"] = sender_email
                             message['To'] = receiver_email
