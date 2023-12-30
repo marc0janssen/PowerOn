@@ -305,7 +305,7 @@ class POD():
                                 )
 
                             sender_email = self.mail_sender
-                            receiver_email = "marco@mjanssen.nl,janssenmaj@gmail.com" # match.group(0)
+                            receiver_email = "marco@mjanssen.nl;janssenmaj@gmail.com;hij@daniellemarco.nl" # match.group(0)
 
                             message = MIMEMultipart()
                             message["From"] = sender_email
