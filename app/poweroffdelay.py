@@ -229,12 +229,6 @@ class POD():
                                                                   int(self.eh))
                                                                 % 24)
 
-
-                                                        print(line_parts[0])
-                                                        print(line_parts[1])
-                                                        print(line_parts[2])
-                                                        print(line_parts[3])
-
                                                         self.shutdowntime = (
                                                             f"{line_parts[1]}:"
                                                             f"{line_parts[0]}"
