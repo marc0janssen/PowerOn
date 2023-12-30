@@ -32,6 +32,8 @@ class POD():
         app_dir = "/app/"
         log_dir = "/logging/poweron/"
 
+        self.shutdowntime = "00:00"
+
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"
         self.log_file = "poweronbymail.log"
@@ -222,6 +224,10 @@ class POD():
                                                                 line_parts[1])
                                                                   + 2) % 24)
 
+                                                        self.shutdowntime = \
+                                                            f"{line_parts[1]}:"
+                                                        f"{line_parts[0]}"
+
                                                         lines[line] = ' '.join(
                                                             line_parts)
                                                         break
@@ -305,13 +311,15 @@ class POD():
                                     body = (
                                         f"Hi,\n\n {self.nodename} "
                                         f"blijft 2 uur extra aan.\n\n"
+                                        f"De eindtijd is nu "
+                                        f"{self.shutdowntime}\n\n"
                                         f"Fijne dag!\n\n"
                                     )
                                 else:
                                     body = (
                                         f"Hi,\n\n {self.nodename} is al uit, "
-                                        f"Je hoeft het 'power off' "
-                                        f"commando niet meer te sturen.\n\n"
+                                        f"Je kunt de tijd niet verhogen "
+                                        f"nu.\n\n"
                                         f"Fijne dag!\n\n"
                                     )
                             else:

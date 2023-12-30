@@ -132,11 +132,6 @@ class POWEROFF():
                     try:
                         # Execute the shell command
 
-                        print(self.nodepwd)
-                        print(self.nodesshport)
-                        print(self.nodeuser)
-                        print(self.nodeip)
-
                         result = subprocess.run(
                             ["sshpass",
                                 "-p",
