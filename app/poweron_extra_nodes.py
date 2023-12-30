@@ -10,7 +10,6 @@ import shutil
 import socket
 import subprocess
 
-from scapy.all import srp, Ether, ARP
 from datetime import datetime
 from wakeonlan import send_magic_packet
 from chump import Application
@@ -58,6 +57,9 @@ class EXTRA_NODES():
                 self.nodename = list(
                     self.config['EXTRANODES']
                     ['NODE_NAME'].split(","))
+                self.nodeipaddress = list(
+                    self.config['EXTRANODES']
+                    ['NODE_IP'].split(","))
                 self.nodemacaddress = list(
                     self.config['EXTRANODES']
                     ['NODE_MAC_ADDRESS'].split(","))
@@ -107,16 +109,13 @@ class EXTRA_NODES():
                 f"Can't write file {self.log_filePath}."
             )
 
-    def resolve_ip(self, mac_address):
-        # Create an ARP request packet
-        arp_request = Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(pdst='192.168.178.1/24', hwdst=mac_address)
-
-        # Send the packet and receive the response
-        _, response = srp(arp_request, timeout=2, verbose=False)
-
-        # Extract the IP address from the response
-        if response:
-            return response[0][1].psrc
+    def is_active_ip(self, ip_address):
+        command = ['ping', '-c', '1', ip_address]
+        try:
+            _ = subprocess.check_output(command)
+            return True
+        except subprocess.CalledProcessError:
+            return False
 
     def is_mac_address_active(self, mac_address):
         command = "arp -n | grep {} >/dev/null 2>/dev/null".format(mac_address)
@@ -161,9 +160,7 @@ class EXTRA_NODES():
                             # if not self.check_mac_address(
                             #        self.nodemacaddress[node].lower()):
 
-                            print(self.resolve_ip(self.nodemacaddress[node].lower()))
-
-                            if self.resolve_ip(self.nodemacaddress[node].lower()):
+                            if not self.is_active_ip(self.nodeipaddress[node]):
 
                                 send_magic_packet(self.nodemacaddress[node])
 
