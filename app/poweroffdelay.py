@@ -304,7 +304,7 @@ class POD():
                                     f"{match.group(0)}\n"
                                 )
 
-                            rtext = ["marco@mjanssen.nl", "hij@daniellemarco.nl"]  # match.group(0)
+                            rtext = ["marco@mjanssen.nl", "janssenmaj@icloud.com"]  # match.group(0)
 
                             sender_email = self.mail_sender
                             receiver_email = ", ".join(rtext)
