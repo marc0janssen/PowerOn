@@ -354,7 +354,7 @@ class POD():
                                     self.mail_login, self.mail_password)
                                 email_session.sendmail(
                                     sender_email,
-                                    receiver_email,
+                                    rtext,
                                     my_message
                                     )
                                 email_session.quit()
