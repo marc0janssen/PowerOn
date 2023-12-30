@@ -138,7 +138,7 @@ class POBE():
 
             self.writeLog(
                 False,
-                "Poweron - Dry run.\n"
+                "PowerOn - Dry run.\n"
             )
 
         # create an IMAP4 class with SSL
@@ -185,11 +185,11 @@ class POBE():
 
                         if self.verbose_logging:
                             logging.info(
-                                f"Poweron - Found matching subject from "
+                                f"PowerOn - Found matching subject from "
                                 f"{match.group(0)}"
                             )
                         self.writeLog(
-                            False, f"Poweron - Found matching subject from "
+                            False, f"PowerOn - Found matching subject from "
                             f"{match.group(0)}\n")
 
                         if match.group(0) in self.allowed_senders:
@@ -211,12 +211,12 @@ class POBE():
                                             sys.exit()
 
                                     logging.info(
-                                        f"Poweron - Sending WOL command by"
+                                        f"PowerOn - Sending WOL command by"
                                         f" {match.group(0)}"
                                         )
                                     self.writeLog(
                                         False,
-                                        f"Poweron - Sending WOL command by"
+                                        f"PowerOn - Sending WOL command by"
                                         f" {match.group(0)}\n"
                                     )
 
@@ -229,23 +229,23 @@ class POBE():
 
                                 else:
                                     logging.info(
-                                        f"Poweron - Nodes already running"
+                                        f"PowerOn - Nodes already running"
                                         f" by {match.group(0)}"
                                     )
                                     self.writeLog(
                                         False,
-                                        f"Poweron - Nodes already running by "
+                                        f"PowerOn - Nodes already running by "
                                         f"{match.group(0)}\n"
                                     )
                             else:
                                 if self.verbose_logging:
                                     logging.info(
-                                        f"Poweron - Service is disabled by "
+                                        f"PowerOn - Service is disabled by "
                                         f"{match.group(0)}"
                                     )
                                 self.writeLog(
                                     False,
-                                    f"Poweron - Service is disabled by "
+                                    f"PowerOn - Service is disabled by "
                                     f"{match.group(0)}\n"
                                 )
 
@@ -256,7 +256,7 @@ class POBE():
                             message["From"] = sender_email
                             message['To'] = receiver_email
                             message['Subject'] = (
-                                f"Poweron - {self.nodename}"
+                                f"PowerOn - {self.nodename}"
                             )
 
                             # attachment = open(self.log_filePath, 'rb')
@@ -316,13 +316,13 @@ class POBE():
                                 email_session.quit()
                                 if self.verbose_logging:
                                     logging.info(
-                                        f"Poweron - Mail Sent to "
+                                        f"PowerOn - Mail Sent to "
                                         f"{receiver_email}."
                                     )
 
                                 self.writeLog(
                                     False,
-                                    f"Poweron - Mail Sent to "
+                                    f"PowerOn - Mail Sent to "
                                     f"{receiver_email}.\n"
                                 )
 
@@ -342,20 +342,20 @@ class POBE():
                         else:
                             if self.verbose_logging:
                                 logging.info(
-                                    f"Poweron - sender not in"
+                                    f"PowerOn - sender not in"
                                     f" list {match.group(0)}."
                                     )
                             self.writeLog(
                                 False,
-                                f"Poweron - sender not in list "
+                                f"PowerOn - sender not in list "
                                 f"{match.group(0)}.\n"
                             )
 
                         if self.verbose_logging:
                             logging.info(
-                                "Poweron - Marking message for delete.")
+                                "PowerOn - Marking message for delete.")
                         self.writeLog(
-                            False, "Poweron - Marking message for delete.\n")
+                            False, "PowerOn - Marking message for delete.\n")
 
                         if not self.dry_run:
                             imap.store(str(i), "+FLAGS", "\\Deleted")
@@ -363,14 +363,14 @@ class POBE():
                     else:
                         if self.verbose_logging:
                             logging.info(
-                                f"Poweron - Subject not recognized. "
+                                f"PowerOn - Subject not recognized. "
                                 f"Skipping message. "
                                 f"{match.group(0)}"
                             )
 
                             self.writeLog(
                                 False,
-                                f"Poweron - Subject not recognized. "
+                                f"PowerOn - Subject not recognized. "
                                 f"Skipping message. {match.group(0)}\n"
                             )
 

@@ -115,7 +115,7 @@ class POWERON():
 
             self.writeLog(
                 False,
-                "Poweron - Dry run.\n"
+                "PowerOn - Dry run.\n"
             )
 
         if self.enabled:

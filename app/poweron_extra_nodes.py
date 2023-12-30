@@ -9,6 +9,7 @@ import configparser
 import shutil
 import socket
 import subprocess
+import os
 
 from datetime import datetime
 from wakeonlan import send_magic_packet
@@ -106,6 +107,18 @@ class EXTRA_NODES():
                 f"Can't write file {self.log_filePath}."
             )
 
+    def check_mac_address(self, mac_address):
+        # Construct the IP address from the MAC address
+        ip_address = '.'.join(mac_address[i:i+2] for i in range(0, 12, 2))
+
+        # Send a ping request to the IP address
+        response = os.system(f"ping -c 1 {ip_address}")
+
+        if response == 0:
+            return True
+        else:
+            return False
+
     def is_mac_address_active(self, mac_address):
         command = "arp -n | grep {} >/dev/null 2>/dev/null".format(mac_address)
         result = subprocess.call(command, shell=True)
@@ -146,7 +159,7 @@ class EXTRA_NODES():
                     for node in range(numofnodes):
                         try:
                             # is MAC is not active then send magic packet
-                            if not self.is_mac_address_active(
+                            if not self.check_mac_address(
                                     self.nodemacaddress[node].lower()):
 
                                 send_magic_packet(self.nodemacaddress[node])
