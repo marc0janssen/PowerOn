@@ -1,5 +1,5 @@
 # Name: poweronbymail
-# Coder: Marco Janssen (twitter @marc0janssen)
+# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
 # date: 2023-01-04 20:08:00
 # update: 2023-12-28 12:47:00
 

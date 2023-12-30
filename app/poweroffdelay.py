@@ -1,5 +1,5 @@
 # Name: ppweroffdelay
-# Coder: Marco Janssen (twitter @marc0janssen)
+# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
 # date: 2023-12-29 21:34:00
 # update: 2023-12-29 21:34:00
 

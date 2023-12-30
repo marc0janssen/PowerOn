@@ -1,5 +1,5 @@
 # Name: poweron
-# Coder: Marco Janssen (twitter @marc0janssen)
+# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
 # date: 2023-12-28 17:15:00
 # update: 2023-12-28 17:15:00
 

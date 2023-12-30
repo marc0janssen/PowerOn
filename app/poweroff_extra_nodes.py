@@ -1,5 +1,5 @@
 # Name: poweroff_extra_nodes
-# Coder: Marco Janssen (twitter @marc0janssen)
+# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
 # date: 2023-12-29 14:07:00
 # update: 2023-12-29 14:07:00
 
