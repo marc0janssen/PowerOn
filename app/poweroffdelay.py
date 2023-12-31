@@ -145,14 +145,37 @@ class POD():
                                 # middernacht is
                                 # Dan bereken
                                 # juiste uur
-                                line_parts[1] = \
+
+                                poweroffhours = line_parts[1].split(',')
+
+                                poweroffhours[0] = \
                                     str((int(line_parts[1]) + int(self.eh))
                                         % 24)
 
-                                self.shutdowntime = (
-                                    f"{line_parts[1].zfill(2)}:"
+                                self.shutdowntime1 = (
+                                    f"{poweroffhours[0].zfill(2)}:"
                                     f"{line_parts[0].zfill(2)}"
                                     )
+
+                                if poweroffhours.count == 1:
+                                    line_parts[1] = [poweroffhours[0], 6]
+
+                                    self.shutdowntime2 = (
+                                        f"06:"
+                                        f"{line_parts[0].zfill(2)}"
+                                        )
+                                else:
+                                    poweroffhours[1] = \
+                                        str((int(line_parts[1]) + int(self.eh))
+                                            % 24)
+
+                                    line_parts[1] = [poweroffhours[0],
+                                                     poweroffhours[1]]
+
+                                    self.shutdowntime2 = (
+                                        f"{poweroffhours[1]}:"
+                                        f"{line_parts[0].zfill(2)}"
+                                        )
 
                                 lines[line] = ' '.join(line_parts)
                                 break
