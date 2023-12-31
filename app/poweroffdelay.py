@@ -351,9 +351,6 @@ class POD():
                                         f"{self.shutdowntime}\n\n"
                                     )
 
-                                    print(self.shutdowntime)
-                                    print(self.maxshutdowntime)
-
                                     if self.shutdowntime != \
                                             self.maxshutdowntime:
                                         body = (
