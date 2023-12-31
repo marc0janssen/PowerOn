@@ -60,7 +60,8 @@ class POBE():
 
                 # NODE
                 self.nodename = self.config['NODE']['NODE_NAME']
-                self.macaddress = self.config['NODE']['NODE_MAC']
+                self.macaddress = self.config['NODE']['NODE_MAC']\
+                    .replace(":", "-").lower()
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
@@ -198,15 +199,10 @@ class POBE():
                                     socket.AF_INET, socket.SOCK_STREAM)
                                 result = sock.connect_ex(
                                     (self.nodeip, self.nodeport))
-                                
-                                print(result)
 
                                 if result != 0:
                                     if not self.dry_run:
                                         try:
-
-                                            print(self.macaddress)
-
                                             send_magic_packet(self.macaddress)
 
                                         except ValueError:
