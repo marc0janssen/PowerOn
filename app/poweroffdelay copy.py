@@ -131,7 +131,7 @@ class POD():
         emby_url = "https://emby.mjanssen.nl/"
         api_key = "41be1adb7d84425184ca69ae0e6528cb"
 
-        api_endpoint = f"{emby_url}/Sessions"
+        api_endpoint = f"{emby_url}/Sessions/Playing"
         headers = {"X-MediaBrowser-Token": api_key}
 
         # Send GET request to the API endpoint
