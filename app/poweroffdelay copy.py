@@ -12,6 +12,7 @@ import configparser
 import shutil
 import smtplib
 import socket
+import requests
 
 from datetime import datetime
 from email.header import decode_header
@@ -123,9 +124,13 @@ class POD():
             logging.error(
                 f"Can't write file {self.log_filePath}."
             )
-    
-    def checkEmbyIsPlaying():
+
+    def checkEmbyIsPlaying(self):
         # API endpoint to get playing information
+
+        emby_url = "https://emby.mjanssen.nl/"
+        api_key = "41be1adb7d84425184ca69ae0e6528cb"
+
         api_endpoint = f"{emby_url}/Sessions"
         headers = {"X-MediaBrowser-Token": api_key}
 
@@ -141,101 +146,83 @@ class POD():
         else:
             print("Emby is not playing a video.")
 
-
-
-
     def changeCrontab(self, mailer):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex((self.nodeip, self.nodeport))
+        if not self.dry_run:
+            try:
+                with open("/etc/crontabs/root", 'r') as file:
+                    content = file.read()
+                    file.close()
 
-        if result == 0:
-            if not self.dry_run:
-                try:
-                    with open("/etc/crontabs/root", 'r') as file:
-                        content = file.read()
-                        file.close()
+                    lines = content.split('\n')
 
-                        lines = content.split('\n')
+                    for line in range(len(lines)):
+                        if "poweroff.py" in lines[line]:
+                            line_parts = lines[line].split()
 
-                        for line in range(len(lines)):
-                            if "poweroff.py" in lines[line]:
-                                line_parts = lines[line].split()
+                            # als het voorbij
+                            # middernacht is
+                            # Dan bereken
+                            # juiste uur
+                            line_parts[1] = \
+                                str((int(line_parts[1]) + int(self.eh))
+                                    % 24)
 
-                                # als het voorbij
-                                # middernacht is
-                                # Dan bereken
-                                # juiste uur
-                                line_parts[1] = \
-                                    str((int(line_parts[1]) + int(self.eh))
-                                        % 24)
+                            self.shutdowntime = (
+                                f"{line_parts[1].zfill(2)}:"
+                                f"{line_parts[0].zfill(2)}"
+                                )
 
-                                self.shutdowntime = (
-                                    f"{line_parts[1].zfill(2)}:"
-                                    f"{line_parts[0].zfill(2)}"
-                                    )
+                            lines[line] = ' '.join(line_parts)
+                            break
 
-                                lines[line] = ' '.join(line_parts)
-                                break
+                    new_text = '\n'.join(lines)
 
-                        new_text = '\n'.join(lines)
+                    try:
+                        with open("/etc/crontabs/root", 'w') as file:
+                            file.write(new_text)
+                            file.close()
 
-                        try:
-                            with open("/etc/crontabs/root", 'w') as file:
-                                file.write(new_text)
-                                file.close()
+                    except IOError:
+                        logging.error(
+                            "Error writing the "
+                            "file /etc/crontabs"
+                            "/root.")
 
-                        except IOError:
-                            logging.error(
-                                "Error writing the "
-                                "file /etc/crontabs"
-                                "/root.")
+            except FileNotFoundError:
+                logging.error(
+                    "File not found - "
+                    "/etc/crontabs/root.")
+            except IOError:
+                logging.error(
+                    "Error reading the"
+                    " file /etc/crontabs/root.")
 
-                except FileNotFoundError:
-                    logging.error(
-                        "File not found - "
-                        "/etc/crontabs/root.")
-                except IOError:
-                    logging.error(
-                        "Error reading the"
-                        " file /etc/crontabs/root.")
-
-            logging.info(
-                f"PowerOffDelay - PowerOffdelay by"
-                f" {mailer}"
-                )
-            self.writeLog(
-                False,
-                f"PowerOffDelay - PowerOffdelay by"
-                f" {mailer}\n"
+        logging.info(
+            f"PowerOffDelay - PowerOffdelay by"
+            f" {mailer}"
             )
+        self.writeLog(
+            False,
+            f"PowerOffDelay - PowerOffdelay by"
+            f" {mailer}\n"
+        )
 
-            self.message = \
-                self.userPushover.send_message(
-                    message=f"PowerOffDelay - "
-                    f"PowerOffDelay sent by "
-                    f"{mailer}\n"
-                    )
-
-        else:
-            logging.info(
-                f"PowerOffDelay - Nodes not running"
-                f" by {mailer}"
-            )
-            self.writeLog(
-                False,
-                f"PowerOffDelay - Nodes "
-                f"not running by "
+        self.message = \
+            self.userPushover.send_message(
+                message=f"PowerOffDelay - "
+                f"PowerOffDelay sent by "
                 f"{mailer}\n"
-            )
-
-        return result
+                )
 
     def run(self):
         # Setting for PushOver
         self.appPushover = Application(self.pushover_token_api)
         self.userPushover = self.appPushover.get_user(self.pushover_user_key)
 
+        self.checkEmbyIsPlaying()
+
         if self.dry_run:
+
             logging.info(
                 "*****************************************")
             logging.info(
@@ -302,10 +289,25 @@ class POD():
 
                         if match.group(0) in self.allowed_senders:
 
+                            sock = socket.socket(
+                                socket.AF_INET, socket.SOCK_STREAM)
+                            result = sock.connect_ex((
+                                self.nodeip, self.nodeport))
+
                             if self.enabled:
-
-                                result = self.changeCrontab(match.group(0))
-
+                                if result == 0:
+                                    self.changeCrontab(match.group(0))
+                                else:
+                                    logging.info(
+                                        f"PowerOffDelay - Nodes not running"
+                                        f" by {match.group(0)}"
+                                    )
+                                    self.writeLog(
+                                        False,
+                                        f"PowerOffDelay - Nodes "
+                                        f"not running by "
+                                        f"{match.group(0)}\n"
+                                    )
                             else:
                                 if self.verbose_logging:
                                     logging.info(
