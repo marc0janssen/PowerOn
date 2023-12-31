@@ -32,8 +32,7 @@ class POD():
         app_dir = "/app/"
         log_dir = "/logging/poweron/"
 
-        self.shutdowntime1 = "00:00"
-        self.shutdowntime2 = "00:00"
+        self.shutdowntime = "00:00"
 
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"
@@ -147,39 +146,33 @@ class POD():
                                 # Dan bereken
                                 # juiste uur
 
+                                # Split the shoutdown hours
                                 poweroffhours = line_parts[1].split(',')
 
+                                # Add de extend hours to the first hour
                                 poweroffhours[0] = \
                                     str((int(poweroffhours[0]) + int(self.eh))
                                         % 24)
 
-                                self.shutdowntime1 = (
-                                    f"{poweroffhours[0].zfill(2)}:"
-                                    f"{line_parts[0].zfill(2)}"
-                                    )
+                                # if extend time is past 06:00,
+                                # then always shutdown at 06:00
+                                if poweroffhours[0] >= "6":
+                                    line_parts[1] = ("6")
 
-                                if len(poweroffhours) == 1:
+                                    # format the first shutdown time
+                                    self.shutdowntime = (
+                                        f"{line_parts[1].zfill(2)}:"
+                                        f"{line_parts[0].zfill(2)}"
+                                        )
+                                else:
                                     line_parts[1] = (
                                         f"{poweroffhours[0]},"
                                         f"6"
                                     )
 
-                                    self.shutdowntime2 = (
-                                        f"06:"
-                                        f"{line_parts[0].zfill(2)}"
-                                        )
-                                else:
-                                    poweroffhours[1] = \
-                                        str((int(poweroffhours[1]) + int(self.eh))
-                                            % 24)
-
-                                    line_parts[1] = (
-                                        f"{poweroffhours[0]},"
-                                        f"{poweroffhours[1]}"
-                                    )
-
-                                    self.shutdowntime2 = (
-                                        f"{poweroffhours[1]}:"
+                                    # format the first shutdown time
+                                    self.shutdowntime = (
+                                        f"{poweroffhours[0].zfill(2)}"
                                         f"{line_parts[0].zfill(2)}"
                                         )
 
@@ -344,10 +337,9 @@ class POD():
                                         f"Hi,\n\n {self.nodename} "
                                         f"blijft 2 uur extra aan.\n\n"
                                         f"De eindtijd is nu "
-                                        f"{self.shutdowntime1}\n\n"
-                                        f"Als de eerst tijd niet lukt, is"
-                                        f"de volgende eindtijd is nu "
-                                        f"{self.shutdowntime2}\n\n"
+                                        f"{self.shutdowntime}\n\n"
+                                        f"Als de eerst tijd niet lukt, is "
+                                        f"de volgende eindtijd 06:00\n\n"
                                         f"Fijne dag!\n\n"
                                     )
                                 else:
