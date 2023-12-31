@@ -159,7 +159,7 @@ class EXTRA_NODES():
                         try:
 
                             # is MAC is not active then send magic packet
-                            if self.is_active_ip(self.nodeipaddress[node]):
+                            if self.is_active_ip(self.extranodeip[node]):
 
                                 # Execute the shell command
 

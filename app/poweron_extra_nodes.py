@@ -57,7 +57,7 @@ class EXTRA_NODES():
                 self.nodename = list(
                     self.config['EXTRANODES']
                     ['NODE_NAME'].split(","))
-                self.nodeipaddress = list(
+                self.extranodeip = list(
                     self.config['EXTRANODES']
                     ['NODE_IP'].split(","))
                 self.nodemacaddress = list(
@@ -152,7 +152,7 @@ class EXTRA_NODES():
                             # if not self.check_mac_address(
                             #        self.nodemacaddress[node].lower()):
 
-                            if not self.is_active_ip(self.nodeipaddress[node]):
+                            if not self.is_active_ip(self.extranodeip[node]):
 
                                 send_magic_packet(self.nodemacaddress[node])
 
