@@ -165,9 +165,6 @@ class POD():
                                          int(self.extendhour))
                                         % 24)
 
-                                print(poweroffhours[0])
-                                print(self.maxhour)
-
                                 # if extend time is past self.maxhour,
                                 # then always shutdown at self.maxhour
                                 if int(poweroffhours[0]) >= int(self.maxhour):
@@ -446,8 +443,8 @@ class POD():
                             False, "PowerOffDelay - "
                             "Marking message for delete.\n")
 
-                        #if not self.dry_run:
-                        #    imap.store(str(i), "+FLAGS", "\\Deleted")
+                        if not self.dry_run:
+                            imap.store(str(i), "+FLAGS", "\\Deleted")
 
                     else:
                         if self.verbose_logging:
