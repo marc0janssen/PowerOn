@@ -170,8 +170,10 @@ class POD():
                                         str((int(line_parts[1]) + int(self.eh))
                                             % 24)
 
-                                    line_parts[1] = [poweroffhours[0],
-                                                     poweroffhours[1]]
+                                    line_parts[1] = (
+                                        f"{poweroffhours[0]},"
+                                        f"{poweroffhours[1]}"
+                                    )
 
                                     self.shutdowntime2 = (
                                         f"{poweroffhours[1]}:"
