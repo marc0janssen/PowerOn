@@ -163,7 +163,7 @@ class EXTRA_NODES():
 
                                 # Execute the shell command
 
-                                result = subprocess.run(
+                                resultProces = subprocess.run(
                                     ["sshpass",
                                         "-p",
                                         f"{self.nodepwd[node]}",
@@ -174,11 +174,11 @@ class EXTRA_NODES():
                                         f"{self.nodeuser[node]}"
                                         f"@{self.extranodeip[node]}",
                                         f"echo {self.nodepwd[node]}"
-                                        f"|sudo -S poweroff"],
+                                        f"|sudo -S poweroff;exit"],
                                     capture_output=True, text=True)
 
                                 # Print the command output
-                                # logging.info(result.stdout)
+                                logging.info(resultProces.stdout)
 
                                 self.message = \
                                     self.userPushover.send_message(

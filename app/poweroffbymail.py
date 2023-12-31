@@ -208,7 +208,7 @@ class POBE():
                                         try:
                                             # Execute the shell command
 
-                                            result = subprocess.run(
+                                            resultProces = subprocess.run(
                                                 ["sshpass",
                                                     "-p",
                                                     f"{self.nodepwd}",
@@ -219,11 +219,11 @@ class POBE():
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
                                                     f"echo {self.nodepwd}"
-                                                    f"|sudo -S poweroff"],
+                                                    f"|sudo -S poweroff;exit"],
                                                 capture_output=True, text=True)
 
                                             # Print the command output
-                                            # logging.info(result.stdout)
+                                            logging.info(resultProces.stdout)
 
                                         except ValueError:
                                             logging.error(
