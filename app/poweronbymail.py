@@ -60,8 +60,7 @@ class POBE():
 
                 # NODE
                 self.nodename = self.config['NODE']['NODE_NAME']
-                self.macaddress = self.config['NODE']['NODE_MAC']\
-                    .replace(":", "-").lower()
+                self.macaddress = self.config['NODE']['NODE_MAC']
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
