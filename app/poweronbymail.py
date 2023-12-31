@@ -199,6 +199,9 @@ class POBE():
                                     socket.AF_INET, socket.SOCK_STREAM)
                                 result = sock.connect_ex(
                                     (self.nodeip, self.nodeport))
+                                
+                                print(result)
+
                                 if result != 0:
                                     if not self.dry_run:
                                         try:
