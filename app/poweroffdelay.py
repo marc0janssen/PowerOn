@@ -355,8 +355,8 @@ class POD():
                                             self.maxshutdowntime:
                                         body = (
                                             f"{body}"
-                                            f"Als de eerst tijd niet lukt, is "
-                                            f"de volgende eindtijd "
+                                            f"Als de eerst tijd is gepasseerd,"
+                                            f" is de volgende eindtijd "
                                             f"{self.maxshutdowntime}\n\n"
                                         )
 
