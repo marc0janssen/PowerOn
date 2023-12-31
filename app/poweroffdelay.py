@@ -157,10 +157,8 @@ class POD():
                                     f"{poweroffhours[0].zfill(2)}:"
                                     f"{line_parts[0].zfill(2)}"
                                     )
-                                
-                                print(poweroffhours.count)
 
-                                if poweroffhours.count == 1:
+                                if len(poweroffhours) == 1:
                                     line_parts[1] = [poweroffhours[0], 6]
 
                                     self.shutdowntime2 = (
