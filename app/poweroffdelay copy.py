@@ -131,10 +131,23 @@ class POD():
         EMBY_URL = "http://192.168.178.202:8097"
         API_KEY = "41be1adb7d84425184ca69ae0e6528cb"
 
+#        try:
         getDevicecount = requests.request("GET", "%s/emby/Sessions?api_key=%s" % (EMBY_URL, API_KEY), timeout=3)
         activeCount = getDevicecount.json()
 
-        print(activeCount)
+        streamCount = 0
+        for device in activeCount:
+            try:
+                # vType = device['NowPlayingItem']['Type']
+                streamCount += 1
+
+            except KeyError:
+                pass
+
+        print(streamCount)
+
+#        except:
+#            pass
 
     def changeCrontab(self, mailer):
         if not self.dry_run:
