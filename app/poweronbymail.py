@@ -205,6 +205,9 @@ class POBE():
                                 if result != 0:
                                     if not self.dry_run:
                                         try:
+
+                                            print(self.macaddress)
+
                                             send_magic_packet(self.macaddress)
 
                                         except ValueError:
