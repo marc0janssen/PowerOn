@@ -128,7 +128,7 @@ class POD():
     def checkEmbyIsPlaying(self):
         # API endpoint to get playing information
 
-        EMBY_URL = "https://emby.mjanssen.nl/"
+        EMBY_URL = "http://192.168.178.202:8097"
         API_KEY = "41be1adb7d84425184ca69ae0e6528cb"
 
         getDevicecount = requests.request("GET", "%s/emby/Sessions?api_key=%s" % (EMBY_URL, API_KEY), timeout=3)
