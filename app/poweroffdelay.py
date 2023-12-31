@@ -419,8 +419,8 @@ class POD():
                             False, "PowerOffDelay - "
                             "Marking message for delete.\n")
 
-                        if not self.dry_run:
-                            imap.store(str(i), "+FLAGS", "\\Deleted")
+                        #if not self.dry_run:
+                        #    imap.store(str(i), "+FLAGS", "\\Deleted")
 
                     else:
                         if self.verbose_logging:
