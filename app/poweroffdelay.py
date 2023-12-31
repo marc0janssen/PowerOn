@@ -352,11 +352,22 @@ class POD():
                                         f"blijft 2 uur extra aan.\n\n"
                                         f"De eindtijd is nu "
                                         f"{self.shutdowntime}\n\n"
-                                        f"Als de eerst tijd niet lukt, is "
-                                        f"de volgende eindtijd "
-                                        f"{self.maxshutdowntime}\n\n"
+                                    )
+
+                                    if self.shutdowntime != \
+                                            self.maxshutdowntime:
+                                        body = (
+                                            f"{body}"
+                                            f"Als de eerst tijd niet lukt, is "
+                                            f"de volgende eindtijd "
+                                            f"{self.maxshutdowntime}\n\n"
+                                        )
+
+                                    body = (
+                                        f"{body}"
                                         f"Fijne dag!\n\n"
                                     )
+
                                 else:
                                     body = (
                                         f"Hi,\n\n {self.nodename} is al uit, "
