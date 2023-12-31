@@ -159,7 +159,10 @@ class POD():
                                     )
 
                                 if len(poweroffhours) == 1:
-                                    line_parts[1] = [poweroffhours[0], 6]
+                                    line_parts[1] = (
+                                        f"{poweroffhours[0]},"
+                                        f"6"
+                                    )
 
                                     self.shutdowntime2 = (
                                         f"06:"
