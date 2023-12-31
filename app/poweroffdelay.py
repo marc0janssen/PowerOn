@@ -167,7 +167,7 @@ class POD():
 
                                 # if extend time is past self.maxhour,
                                 # then always shutdown at self.maxhour
-                                if poweroffhours[0] >= "f{self.maxhour}":
+                                if poweroffhours[0] >= f"{self.maxhour}":
                                     line_parts[1] = (self.maxhour)
 
                                     # format the first shutdown time
