@@ -134,11 +134,11 @@ class POBE():
 
         if self.dry_run:
             logging.info(
-                "*****************************************")
+                "********************************************")
             logging.info(
-                "**** DRY RUN, NOTHING WILL SET AWAKE ****")
+                "**** DRY RUN, NOTHING WILL SET TO SLEEP ****")
             logging.info(
-                "*****************************************")
+                "********************************************")
 
             self.writeLog(
                 False,

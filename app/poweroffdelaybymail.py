@@ -250,11 +250,11 @@ class POD():
 
         if self.dry_run:
             logging.info(
-                "*****************************************")
+                "******************************************")
             logging.info(
-                "**** DRY RUN, NOTHING WILL SET AWAKE ****")
+                "**** DRY RUN, NOTHING WILL DE DELAYED ****")
             logging.info(
-                "*****************************************")
+                "******************************************")
 
             self.writeLog(
                 False,
