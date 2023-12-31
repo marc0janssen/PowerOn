@@ -13,6 +13,7 @@ import shutil
 import smtplib
 import socket
 import requests
+import json
 
 from datetime import datetime
 from email.header import decode_header
@@ -128,23 +129,28 @@ class POD():
     def checkEmbyIsPlaying(self):
         # API endpoint to get playing information
 
-        emby_url = "https://emby.mjanssen.nl/"
-        api_key = "41be1adb7d84425184ca69ae0e6528cb"
+        EMBY_URL = "https://emby.mjanssen.nl/"
+        API_KEY = "41be1adb7d84425184ca69ae0e6528cb"
 
-        api_endpoint = f"{emby_url}/Sessions/Playing"
-        headers = {"X-MediaBrowser-Token": api_key}
+        PLAYING_ENDPOINT = f'{EMBY_URL}/Sessions/Playing'
 
-        # Send GET request to the API endpoint
-        response = requests.get(api_endpoint, headers=headers)
+        # Request headers
+        headers = {
+                'X-Emby-Token': API_KEY,
+                'Accept': 'application/json'
+        }
 
-        # Check the response for playing information
-        data = response.json()
+        # Send request to get playing state
+        response = requests.get(PLAYING_ENDPOINT, headers=headers)
+
+        # Parse JSON response
+        data = json.loads(response.text)
+
+        # Check if any content is playing
         if data:
-            print("Emby is currently playing a video.")
-            print(data)
-            # Additional code to handle the playing information
+            print('EMBY is currently playing content.')
         else:
-            print("Emby is not playing a video.")
+            print('EMBY is not playing content.')
 
     def changeCrontab(self, mailer):
         if not self.dry_run:
