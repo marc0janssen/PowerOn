@@ -170,7 +170,7 @@ class POD():
                                         )
                                 else:
                                     poweroffhours[1] = \
-                                        str((int(line_parts[1]) + int(self.eh))
+                                        str((int(poweroffhours[1]) + int(self.eh))
                                             % 24)
 
                                     line_parts[1] = (
