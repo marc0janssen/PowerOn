@@ -211,12 +211,12 @@ class POWEROFF():
 
             else:
                 logging.info(
-                    "PowerOff - Nodes already down"
+                    "PowerOff - Node already down"
                     " by cron"
                 )
                 self.writeLog(
                     False,
-                    "PowerOff - Nodes already down by cron\n"
+                    "PowerOff - Node already down by cron\n"
                 )
         else:
             if self.verbose_logging:

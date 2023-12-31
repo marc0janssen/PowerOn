@@ -117,12 +117,12 @@ class EXTRA_NODES():
                 f"Can't write file {self.log_filePath}."
             )
 
-    def is_mac_address_active(self, mac_address):
-        command = "arp -n | grep {} >/dev/null 2>/dev/null".format(mac_address)
-        result = subprocess.call(command, shell=True)
-        if result == 0:
+    def is_active_ip(self, ip_address):
+        command = ['ping', '-c', '1', ip_address]
+        try:
+            _ = subprocess.check_output(command)
             return True
-        else:
+        except subprocess.CalledProcessError:
             return False
 
     def run(self):
@@ -159,8 +159,7 @@ class EXTRA_NODES():
                         try:
 
                             # is MAC is not active then send magic packet
-                            if self.is_mac_address_active(
-                                    self.nodemacaddress[node].lower()):
+                            if self.is_active_ip(self.nodeipaddress[node]):
 
                                 # Execute the shell command
 

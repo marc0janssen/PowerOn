@@ -117,14 +117,6 @@ class EXTRA_NODES():
         except subprocess.CalledProcessError:
             return False
 
-    def is_mac_address_active(self, mac_address):
-        command = "arp -n | grep {} >/dev/null 2>/dev/null".format(mac_address)
-        result = subprocess.call(command, shell=True)
-        if result == 0:
-            return True
-        else:
-            return False
-
     def run(self):
         # Setting for PushOver
         self.appPushover = Application(self.pushover_token_api)
