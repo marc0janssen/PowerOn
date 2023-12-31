@@ -32,7 +32,8 @@ class POD():
         app_dir = "/app/"
         log_dir = "/logging/poweron/"
 
-        self.shutdowntime = "00:00"
+        self.shutdowntime1 = "00:00"
+        self.shutdowntime2 = "00:00"
 
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"
@@ -338,7 +339,10 @@ class POD():
                                         f"Hi,\n\n {self.nodename} "
                                         f"blijft 2 uur extra aan.\n\n"
                                         f"De eindtijd is nu "
-                                        f"{self.shutdowntime}\n\n"
+                                        f"{self.shutdowntime1}\n\n"
+                                        f"Als de eerst tijd niet lukt, is"
+                                        f"de volgende eindtijd is nu "
+                                        f"{self.shutdowntime2}\n\n"
                                         f"Fijne dag!\n\n"
                                     )
                                 else:
