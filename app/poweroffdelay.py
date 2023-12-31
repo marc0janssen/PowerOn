@@ -33,6 +33,7 @@ class POD():
         log_dir = "/logging/poweron/"
 
         self.shutdowntime = "00:00"
+        self.maxshutdowntime = "00:00"
 
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"
@@ -76,8 +77,17 @@ class POD():
                 self.keyword = self.config['EXTENDTIME']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['EXTENDTIME']['ALLOWED_SENDERS'].split(","))
-                self.eh = \
+                self.extendhour = \
                     self.config['EXTENDTIME']['EXTEND_TIME_IN_HOURS']
+                self.maxhour = \
+                    self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
+                self.defaultminutes = \
+                    self.config['EXTENDTIME']['DEFAULT_MINUTES']
+
+                self.maxshutdowntime = (
+                    f"{self.maxhour.zfill(2)}:"
+                    f"{self.defaultminutes.zfill(2)}"
+                )
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -151,13 +161,14 @@ class POD():
 
                                 # Add de extend hours to the first hour
                                 poweroffhours[0] = \
-                                    str((int(poweroffhours[0]) + int(self.eh))
+                                    str((int(poweroffhours[0]) +
+                                         int(self.extendhour))
                                         % 24)
 
-                                # if extend time is past 06:00,
-                                # then always shutdown at 06:00
-                                if poweroffhours[0] >= "6":
-                                    line_parts[1] = ("6")
+                                # if extend time is past self.maxhour,
+                                # then always shutdown at self.maxhour
+                                if poweroffhours[0] >= "f{self.maxhour}":
+                                    line_parts[1] = (self.maxhour)
 
                                     # format the first shutdown time
                                     self.shutdowntime = (
@@ -167,12 +178,12 @@ class POD():
                                 else:
                                     line_parts[1] = (
                                         f"{poweroffhours[0]},"
-                                        f"6"
+                                        f"{self.maxhour}"
                                     )
 
                                     # format the first shutdown time
                                     self.shutdowntime = (
-                                        f"{poweroffhours[0].zfill(2)}"
+                                        f"{poweroffhours[0].zfill(2)}:"
                                         f"{line_parts[0].zfill(2)}"
                                         )
 
@@ -339,7 +350,8 @@ class POD():
                                         f"De eindtijd is nu "
                                         f"{self.shutdowntime}\n\n"
                                         f"Als de eerst tijd niet lukt, is "
-                                        f"de volgende eindtijd 06:00\n\n"
+                                        f"de volgende eindtijd "
+                                        f"{self.maxshutdowntime}\n\n"
                                         f"Fijne dag!\n\n"
                                     )
                                 else:

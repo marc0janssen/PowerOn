@@ -33,6 +33,7 @@ ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
 DEFAULT_HOUR = 1
 DEFAULT_MINUTES = 30
 EXTEND_TIME_IN_HOURS = 2
+MAX_SHUTDOWN_HOUR_TIME = 6
 
 [EXTRANODES]
 NODE_NAME = node1,node2,node3
