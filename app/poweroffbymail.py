@@ -81,6 +81,8 @@ class POBE():
                 self.defaulthour = self.config['EXTENDTIME']['DEFAULT_HOUR']
                 self.defaultminutes = \
                     self.config['EXTENDTIME']['DEFAULT_MINUTES']
+                self.maxhour = \
+                    self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -245,8 +247,11 @@ class POBE():
 
                                                     line_parts = \
                                                         lines[line].split()
-                                                    line_parts[1] = \
-                                                        self.defaulthour
+
+                                                    line_parts[1] = (
+                                                        f"{self.defaulthour},"
+                                                        f"{self.maxhour}"
+                                                        )
                                                     line_parts[0] = \
                                                         self.defaultminutes
 
