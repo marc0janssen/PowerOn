@@ -155,6 +155,8 @@ class POBE():
 
         for i in range(1, messages+1):
 
+            print(f"i = {i}")
+
             # fetch the email message by ID
             res, msg = imap.fetch(str(i), "(RFC822)")
             for response in msg:
