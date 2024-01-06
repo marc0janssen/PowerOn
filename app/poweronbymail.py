@@ -151,6 +151,8 @@ class POBE():
         # total number of emails
         messages = int(messages[0])
 
+        print("ok")
+
         for i in range(1, messages+1):
 
             # fetch the email message by ID
