@@ -159,6 +159,10 @@ class POBE():
 
             # fetch the email message by ID
             res, msg = imap.fetch(str(i), "(RFC822)")
+
+            print(res)
+            print(msg)
+
             for response in msg:
 
                 print(response)
