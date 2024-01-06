@@ -160,7 +160,13 @@ class POBE():
             # fetch the email message by ID
             res, msg = imap.fetch(str(i), "(RFC822)")
             for response in msg:
+
+                print(response)
+
                 if isinstance(response, tuple):
+
+                    print("ok1")
+
                     # parse a bytes email into a message object
                     msg = email.message_from_bytes(response[1])
 
