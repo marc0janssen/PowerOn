@@ -151,26 +151,12 @@ class POBE():
         # total number of emails
         messages = int(messages[0])
 
-        print("ok")
-
         for i in range(1, messages+1):
-
-            print(f"i = {i}")
 
             # fetch the email message by ID
             res, msg = imap.fetch(str(i), "(RFC822)")
-
-            print(res)
-            print(msg)
-
             for response in msg:
-
-                print(response)
-
                 if isinstance(response, tuple):
-
-                    print("ok1")
-
                     # parse a bytes email into a message object
                     msg = email.message_from_bytes(response[1])
 
@@ -194,8 +180,6 @@ class POBE():
                             From = From.decode("utf-8")
 
                     match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
-
-                    print(f"hallo = {str.lower(subject)}")
 
                     if str.lower(subject) == self.keyword.lower():
 
