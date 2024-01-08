@@ -346,9 +346,9 @@ class POD():
                                 if result == 0:
                                     body = (
                                         f"Hi,\n\n De node {self.nodename} "
-                                        f"blijft 2 uur extra aan, "
-                                        f"omdat {match.group(0)} "
-                                        f"dit aanvraagt.\n\n"
+                                        f"blijft 2 uur extra aan.\n\n"
+                                        f"Deze aanvraag komt van "
+                                        f"{match.group(0)}.\n\n"
                                         f"De eindtijd is nu "
                                         f"{self.shutdowntime}\n\n"
                                     )
@@ -369,17 +369,22 @@ class POD():
 
                                 else:
                                     body = (
-                                        f"Hi,\n\n {self.nodename} is al uit, "
-                                        f"Je kunt de tijd niet verhogen "
-                                        f"nu.\n\n"
+                                        f"Hi,\n\n De node {self.nodename} is"
+                                        f" al uit, Je kunt de tijd nu niet "
+                                        f"verhogen\n\n"
+                                        f"Deze aanvraag komt van "
+                                        f"{match.group(0)}.\n\n"
                                         f"Fijne dag!\n\n"
                                     )
                             else:
                                 body = (
-                                    "Hi,\n\n de service staat uit "
-                                    ", je hoeft even geen commando's "
-                                    "te sturen.\n\n"
-                                    "Fijne dag!\n\n"
+                                    f"Hi,\n\nDe service staat uit om Emby "
+                                    f"aan te kunnen zetten."
+                                    f"Je hoeft en kunt nu dus even geen "
+                                    f"commando's geven.\n\n"
+                                    f"Deze aanvraag komt van "
+                                    f"{match.group(0)}.\n\n"
+                                    f"Fijne dag!\n\n"
                                 )
 
                             plain_text = MIMEText(
