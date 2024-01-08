@@ -345,8 +345,10 @@ class POD():
                             if self.enabled:
                                 if result == 0:
                                     body = (
-                                        f"Hi,\n\n {self.nodename} "
-                                        f"blijft 2 uur extra aan.\n\n"
+                                        f"Hi,\n\n De node {self.nodename} "
+                                        f"blijft 2 uur extra aan, "
+                                        f"omdat {match.group(0)} "
+                                        f"dit aanvraagt.\n\n"
                                         f"De eindtijd is nu "
                                         f"{self.shutdowntime}\n\n"
                                     )
