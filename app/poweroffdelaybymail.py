@@ -345,9 +345,9 @@ class POD():
                             if self.enabled:
                                 if result == 0:
                                     body = (
-                                        f"Hi,\n\n De node {self.nodename} "
-                                        f"blijft 2 uur extra aan.\n\n"
-                                        f"Deze aanvraag komt van "
+                                        f"Hi Hacker,\n\n De node"
+                                        f" {self.nodename} blijft 2 uur extra "
+                                        f"aan.\n\nDeze opdracht komt van "
                                         f"{match.group(0)}.\n\n"
                                         f"De eindtijd is nu "
                                         f"{self.shutdowntime}\n\n"
@@ -369,20 +369,20 @@ class POD():
 
                                 else:
                                     body = (
-                                        f"Hi,\n\n De node {self.nodename} is"
-                                        f" al uit, Je kunt de tijd nu niet "
-                                        f"verhogen\n\n"
-                                        f"Deze aanvraag komt van "
+                                        f"Hi Hacker,\n\n De node "
+                                        f"{self.nodename} staat nu uit.\n"
+                                        f"Je kunt de tijd nu niet verhogen\n\n"
+                                        f"Deze opdracht komt van "
                                         f"{match.group(0)}.\n\n"
                                         f"Fijne dag!\n\n"
                                     )
                             else:
                                 body = (
-                                    f"Hi,\n\nDe service staat uit om Emby "
-                                    f"aan te kunnen zetten."
-                                    f"Je hoeft en kunt nu dus even geen "
-                                    f"commando's geven.\n\n"
-                                    f"Deze aanvraag komt van "
+                                    f"Hi Hacker,\n\nDe service "
+                                    f"staat uit om {self.nodename} aan te "
+                                    f"kunnen zetten.\nJe hoeft en kunt nu dus "
+                                    f"even geen commando's geven.\n\n"
+                                    f"Deze opdracht komt van "
                                     f"{match.group(0)}.\n\n"
                                     f"Fijne dag!\n\n"
                                 )
