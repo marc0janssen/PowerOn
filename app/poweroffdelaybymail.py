@@ -12,6 +12,7 @@ import configparser
 import shutil
 import smtplib
 import socket
+import subprocess
 
 from datetime import datetime
 from email.header import decode_header
@@ -32,6 +33,7 @@ class POD():
         app_dir = "/app/"
         log_dir = "/logging/poweron/"
 
+        self.crontab_file = "/etc/crontabs/root"
         self.shutdowntime = "00:00"
         self.maxshutdowntime = "00:00"
 
@@ -141,7 +143,7 @@ class POD():
         if result == 0:
             if not self.dry_run:
                 try:
-                    with open("/etc/crontabs/root", 'r') as file:
+                    with open(f"{self.crontab_file}", 'r') as file:
                         content = file.read()
                         file.close()
 
@@ -193,24 +195,31 @@ class POD():
                         new_text = '\n'.join(lines)
 
                         try:
-                            with open("/etc/crontabs/root", 'w') as file:
+                            with open(f"{self.crontab_file}", 'w') as file:
                                 file.write(new_text)
                                 file.close()
 
+                                command = f"crontab {self.crontab_file}"
+                                command_result = subprocess.run(
+                                    command.split(),
+                                    capture_output=True,
+                                    text=True
+                                    )
+                                logging.info(command_result)
+
                         except IOError:
                             logging.error(
-                                "Error writing the "
-                                "file /etc/crontabs"
-                                "/root.")
+                                f"Error writing the "
+                                f"file {self.crontab_file}.")
 
                 except FileNotFoundError:
                     logging.error(
-                        "File not found - "
-                        "/etc/crontabs/root.")
+                        f"File not found - "
+                        f"{self.crontab_file}.")
                 except IOError:
                     logging.error(
-                        "Error reading the"
-                        " file /etc/crontabs/root.")
+                        f"Error reading the"
+                        f" file {self.crontab_file}.")
 
             logging.info(
                 f"PowerOffDelay - PowerOffdelay by"
