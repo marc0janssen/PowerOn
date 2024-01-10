@@ -216,7 +216,7 @@ class POBE():
                                             resultProces = subprocess.run(
                                                 ["sshpass",
                                                     "-p",
-                                                    f"{ecsapedpwd}",
+                                                    f"{self.nodepwd}",
                                                     "ssh",
                                                     "-p",
                                                     f"{self.nodesshport}",
