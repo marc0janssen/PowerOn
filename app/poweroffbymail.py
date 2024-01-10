@@ -210,17 +210,20 @@ class POBE():
                                         try:
                                             # Execute the shell command
 
+                                            ecsapedpwd = re.escape(
+                                                self.nodepwd)
+
                                             resultProces = subprocess.run(
                                                 ["sshpass",
                                                     "-p",
-                                                    f"{self.nodepwd}",
+                                                    f"{ecsapedpwd}",
                                                     "ssh",
                                                     "-p",
                                                     f"{self.nodesshport}",
                                                     "-t",
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
-                                                    f"echo \"{self.nodepwd}\""
+                                                    f"echo \"{ecsapedpwd}\""
                                                     f"|sudo -S ls;exit"],
                                                 capture_output=True, text=True)
 
