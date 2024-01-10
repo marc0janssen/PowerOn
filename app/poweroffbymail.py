@@ -220,7 +220,7 @@ class POBE():
                                                     "-t",
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
-                                                    f"echo {self.nodepwd}"
+                                                    f"echo \"{self.nodepwd}\""
                                                     f"|sudo -S ls;exit"],
                                                 capture_output=True, text=True)
 
