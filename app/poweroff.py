@@ -9,6 +9,7 @@ import configparser
 import shutil
 import socket
 import subprocess
+import re
 
 from datetime import datetime
 from chump import Application
@@ -136,6 +137,9 @@ class POWEROFF():
                     try:
                         # Execute the shell command
 
+                        ecsapedpwd = re.escape(
+                            self.nodepwd)
+
                         result = subprocess.run(
                             ["sshpass",
                                 "-p",
@@ -146,7 +150,7 @@ class POWEROFF():
                                 "-t",
                                 f"{self.nodeuser}"
                                 f"@{self.nodeip}",
-                                f"echo {self.nodepwd}"
+                                f"echo {ecsapedpwd}"
                                 f"|sudo -S poweroff"],
                             capture_output=True, text=True)
 

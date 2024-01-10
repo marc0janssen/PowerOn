@@ -224,7 +224,7 @@ class POBE():
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
                                                     f"echo {ecsapedpwd}"
-                                                    f"|sudo -S touch /tmp/test.txt;exit"],
+                                                    f"|sudo -S poweroff;exit"],
                                                 capture_output=True, text=True)
 
                                             # Print the command output
