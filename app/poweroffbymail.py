@@ -223,7 +223,7 @@ class POBE():
                                                     "-t",
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
-                                                    f"echo \"{ecsapedpwd}\""
+                                                    f"echo {ecsapedpwd}"
                                                     f"|sudo -S reboot;exit"],
                                                 capture_output=True, text=True)
 
