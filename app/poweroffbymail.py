@@ -212,8 +212,6 @@ class POBE():
 
                                             ecsapedpwd = re.escape(
                                                 self.nodepwd)
-                                            
-                                            print(ecsapedpwd)
 
                                             resultProces = subprocess.run(
                                                 ["sshpass",
@@ -226,7 +224,7 @@ class POBE():
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
                                                     f"echo \"{ecsapedpwd}\""
-                                                    f"|sudo -S touch /tmp/reboot.txt;exit"],
+                                                    f"|sudo -S reboot;exit"],
                                                 capture_output=True, text=True)
 
                                             # Print the command output
