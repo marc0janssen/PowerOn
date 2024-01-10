@@ -212,6 +212,8 @@ class POBE():
 
                                             ecsapedpwd = re.escape(
                                                 self.nodepwd)
+                                            
+                                            print(ecsapedpwd)
 
                                             resultProces = subprocess.run(
                                                 ["sshpass",
