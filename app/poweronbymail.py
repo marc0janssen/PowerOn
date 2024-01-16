@@ -287,10 +287,10 @@ class POBE():
                                     )
                             else:
                                 body = (
-                                    "Hi,\n\n de service staat uit "
-                                    ", je hoeft even geen commando's "
-                                    "te sturen.\n\n"
-                                    "Fijne dag!\n\n"
+                                    f"Hi,\n\nDe service voor {self.nodename} "
+                                    f"staat uit, je hoeft even geen "
+                                    f"commando's te sturen.\n\n"
+                                    f"Fijne dag!\n\n"
                                 )
 
                             # logfile = open(self.log_filePath, "r")
