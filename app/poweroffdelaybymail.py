@@ -82,12 +82,9 @@ class POD():
                 self.extendhour = \
                     self.config['EXTENDTIME']['EXTEND_TIME_IN_HOURS']
                 self.maxhour = "24" if (
-                    self.config['EXTENDTIME']
-                    ['MAX_SHUTDOWN_HOUR_TIME'] == "0") else \
                     self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
-                self.defaultminutes = \
-                    self.config['EXTENDTIME']['DEFAULT_MINUTES']
-
+                    in ["0", "00"]) else \
+                    self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
                 self.maxshutdowntime = (
                     f"{self.maxhour.zfill(2)}:"
                     f"{self.defaultminutes.zfill(2)}"
