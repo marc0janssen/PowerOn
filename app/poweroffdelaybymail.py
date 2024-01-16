@@ -81,7 +81,9 @@ class POD():
                     self.config['EXTENDTIME']['ALLOWED_SENDERS'].split(","))
                 self.extendhour = \
                     self.config['EXTENDTIME']['EXTEND_TIME_IN_HOURS']
-                self.maxhour = \
+                self.maxhour = "24" if (
+                    self.config['EXTENDTIME']
+                    ['MAX_SHUTDOWN_HOUR_TIME'] == "0") else \
                     self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
                 self.defaultminutes = \
                     self.config['EXTENDTIME']['DEFAULT_MINUTES']
