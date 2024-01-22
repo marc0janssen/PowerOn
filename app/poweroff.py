@@ -57,6 +57,10 @@ class POWEROFF():
                 self.nodeuser = self.config['NODE']['NODE_USER']
                 self.nodepwd = self.config['NODE']['NODE_PWD']
 
+                # POWEROFF
+                self.poweroffcommand = self.config['POWEROFF']
+                ['POWEROFFCOMMAND']
+
                 # EXTENDTIME
                 self.defaulthour = self.config['EXTENDTIME']['DEFAULT_HOUR']
                 self.defaultminutes = \
@@ -151,7 +155,7 @@ class POWEROFF():
                                 f"{self.nodeuser}"
                                 f"@{self.nodeip}",
                                 f"echo {ecsapedpwd}"
-                                f"|sudo -S poweroff"],
+                                f"|sudo -S {self.poweroffcommand}"],
                             capture_output=True, text=True)
 
                         # Print the command output

@@ -52,6 +52,10 @@ class EXTRA_NODES():
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
+                # POWEROFF
+                self.poweroffcommand = self.config['POWEROFF']
+                ['POWEROFFCOMMAND']
+
                 # EXTRANODES
                 self.nodename = list(
                     self.config['EXTRANODES']
@@ -174,7 +178,7 @@ class EXTRA_NODES():
                                         f"{self.nodeuser[node]}"
                                         f"@{self.extranodeip[node]}",
                                         f"echo {self.nodepwd[node]}"
-                                        f"|sudo -S poweroff;exit"],
+                                        f"|sudo -S {self.poweroffcommand}"],
                                     capture_output=True, text=True)
 
                                 # Print the command output

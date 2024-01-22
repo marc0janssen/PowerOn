@@ -26,6 +26,7 @@ ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
 [POWEROFF]
 KEYWORD = keyword
 ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
+POWEROFFCOMMAND = poweroff;exit
 
 [EXTENDTIME]
 KEYWORD = keyword

@@ -76,6 +76,8 @@ class POBE():
                 self.keyword = self.config['POWEROFF']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['POWEROFF']['ALLOWED_SENDERS'].split(","))
+                self.poweroffcommand = self.config['POWEROFF']
+                ['POWEROFFCOMMAND']
 
                 # EXTENDTIME
                 self.defaulthour = self.config['EXTENDTIME']['DEFAULT_HOUR']
@@ -224,7 +226,8 @@ class POBE():
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
                                                     f"echo {ecsapedpwd}"
-                                                    f"|sudo -S poweroff;exit"],
+                                                    f"|sudo -S "
+                                                    f"{self.poweroffcommand}"],
                                                 capture_output=True, text=True)
 
                                             # Print the command output
