@@ -160,7 +160,7 @@ class POWEROFF():
                             capture_output=True, text=True)
 
                         # Print the command output
-                        # logging.info(result.stdout)
+                        logging.info(result.stdout)
 
                         logging.info(
                             "PowerOff - Sending SLEEP command by cron"
