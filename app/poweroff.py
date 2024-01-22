@@ -58,8 +58,7 @@ class POWEROFF():
                 self.nodepwd = self.config['NODE']['NODE_PWD']
 
                 # POWEROFF
-                self.poweroffcommand = self.config['POWEROFF']
-                ['POWEROFFCOMMAND']
+                self.poweroffcommand = self.config['POWEROFF']['POWEROFFCOMMAND']
 
                 print(self.poweroffcommand)
 
