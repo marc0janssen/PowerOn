@@ -61,6 +61,8 @@ class POWEROFF():
                 self.poweroffcommand = self.config['POWEROFF']
                 ['POWEROFFCOMMAND']
 
+                print(self.poweroffcommand)
+
                 # EXTENDTIME
                 self.defaulthour = self.config['EXTENDTIME']['DEFAULT_HOUR']
                 self.defaultminutes = \
