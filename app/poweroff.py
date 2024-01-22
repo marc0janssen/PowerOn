@@ -156,7 +156,7 @@ class POWEROFF():
                                 f"@{self.nodeip}",
                                 f"echo {ecsapedpwd}"
                                 f"|sudo -S bash -c "
-                                f"\"{self.poweroffcommand}\""],
+                                f"'{self.poweroffcommand}'"],
                             capture_output=True, text=True)
 
                         # Print the command output
