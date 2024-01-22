@@ -178,7 +178,8 @@ class EXTRA_NODES():
                                         f"{self.nodeuser[node]}"
                                         f"@{self.extranodeip[node]}",
                                         f"echo {self.nodepwd[node]}"
-                                        f"|sudo -S {self.poweroffcommand}"],
+                                        f"|sudo -S bash -c "
+                                        f"{self.poweroffcommand}"],
                                     capture_output=True, text=True)
 
                                 # Print the command output

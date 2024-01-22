@@ -226,7 +226,7 @@ class POBE():
                                                     f"{self.nodeuser}"
                                                     f"@{self.nodeip}",
                                                     f"echo {ecsapedpwd}"
-                                                    f"|sudo -S "
+                                                    f"|sudo -S bash -c "
                                                     f"{self.poweroffcommand}"],
                                                 capture_output=True, text=True)
 
