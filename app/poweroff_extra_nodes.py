@@ -52,7 +52,6 @@ class EXTRA_NODES():
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
-
                 # EXTRANODES
                 self.nodename = list(
                     self.config['EXTRANODES']

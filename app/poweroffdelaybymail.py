@@ -85,8 +85,10 @@ class POD():
                     self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
                     in ["0", "00"]) else \
                     self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
-                self.defaultminutes = self.config['EXTENDTIME']['DEFAULT_MINUTES']
-                self.maxshutdowntime = (f"{self.maxhour.zfill(2)}:{self.defaultminutes.zfill(2)}")
+                self.defaultminutes = \
+                    self.config['EXTENDTIME']['DEFAULT_MINUTES']
+                self.maxshutdowntime = (
+                    f"{self.maxhour.zfill(2)}:{self.defaultminutes.zfill(2)}")
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -173,7 +175,7 @@ class POD():
                                     self.shutdowntime = (
                                         f"{line_parts[1].zfill(2)}:"
                                         f"{line_parts[0].zfill(2)}"
-                                        )
+                                    )
                                 else:
                                     line_parts[1] = (
                                         f"{poweroffhours[0]},"
@@ -184,7 +186,7 @@ class POD():
                                     self.shutdowntime = (
                                         f"{poweroffhours[0].zfill(2)}:"
                                         f"{line_parts[0].zfill(2)}"
-                                        )
+                                    )
 
                                 lines[line] = ' '.join(line_parts)
                                 break
@@ -201,7 +203,7 @@ class POD():
                                     command.split(),
                                     capture_output=True,
                                     text=True
-                                    )
+                                )
                                 logging.info(command_result)
 
                         except IOError:
@@ -221,7 +223,7 @@ class POD():
             logging.info(
                 f"PowerOffDelay - PowerOffdelay by"
                 f" {mailer}"
-                )
+            )
             self.writeLog(
                 False,
                 f"PowerOffDelay - PowerOffdelay by"
@@ -233,7 +235,7 @@ class POD():
                     message=f"PowerOffDelay - "
                     f"PowerOffDelay sent by "
                     f"{mailer}\n"
-                    )
+                )
 
         else:
             logging.info(
@@ -409,7 +411,7 @@ class POD():
                                     sender_email,
                                     self.allowed_senders,
                                     my_message
-                                    )
+                                )
                                 email_session.quit()
 
                                 if self.verbose_logging:
@@ -442,7 +444,7 @@ class POD():
                                 logging.info(
                                     f"PowerOffDelay - sender not in"
                                     f" list {match.group(0)}."
-                                    )
+                                )
                             self.writeLog(
                                 False,
                                 f"PowerOffDelay - sender not in list "
