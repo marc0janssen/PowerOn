@@ -53,8 +53,8 @@ class EXTRA_NODES():
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
                 # POWEROFF
-                self.poweroffcommand = self.config['POWEROFF']
-                ['POWEROFFCOMMAND']
+                self.poweroffcommand = \
+                    self.config['POWEROFF']['POWEROFFCOMMAND']
 
                 # EXTRANODES
                 self.nodename = list(

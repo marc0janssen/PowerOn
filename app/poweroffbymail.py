@@ -76,8 +76,8 @@ class POBE():
                 self.keyword = self.config['POWEROFF']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['POWEROFF']['ALLOWED_SENDERS'].split(","))
-                self.poweroffcommand = self.config['POWEROFF']
-                ['POWEROFFCOMMAND']
+                self.poweroffcommand = \
+                    self.config['POWEROFF']['POWEROFFCOMMAND']
 
                 # EXTENDTIME
                 self.defaulthour = self.config['EXTENDTIME']['DEFAULT_HOUR']
