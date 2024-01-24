@@ -52,9 +52,6 @@ class EXTRA_NODES():
                 self.nodeip = self.config['NODE']['NODE_IP']
                 self.nodeport = int(self.config['NODE']['NODE_PORT'])
 
-                # POWEROFF
-                self.poweroffcommand = \
-                    self.config['POWEROFF']['POWEROFFCOMMAND']
 
                 # EXTRANODES
                 self.nodename = list(
@@ -75,6 +72,8 @@ class EXTRA_NODES():
                 self.nodemacaddress = list(
                     self.config['EXTRANODES']
                     ['NODE_MAC_ADDRESS'].split(","))
+                self.poweroffcommand = \
+                    self.config['EXTRANODES']['POWEROFFCOMMAND']
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
