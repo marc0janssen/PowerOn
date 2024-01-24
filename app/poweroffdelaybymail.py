@@ -85,10 +85,7 @@ class POD():
                     self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
                     in ["0", "00"]) else \
                     self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
-                self.maxshutdowntime = (
-                    f"{self.maxhour.zfill(2)}:"
-                    f"{self.defaultminutes.zfill(2)}"
-                )
+                self.maxshutdowntime = (f"{self.maxhour.zfill(2)}:{self.defaultminutes.zfill(2)}")
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
