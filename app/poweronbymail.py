@@ -110,8 +110,12 @@ class POBE():
 
             # Get state from jsonfile
             try:
-                with open(self.state_filePath, 'r') as json_file:
-                    self.credits = json.load(json_file)
+                now = datetime.now()
+                current_date_time = now.strftime("%Y-%m-%d %H:%M:%S")
+
+                if self.get_first_day_of_week() != current_date_time:
+                    with open(self.state_filePath, 'r') as json_file:
+                        self.credits = json.load(json_file)
 
             except IOError or FileNotFoundError:
                 logging.info(
@@ -434,8 +438,6 @@ class POBE():
             logging.error(
                 f"Can't save file {self.state_filePath}."
             )
-
-        logging.info(self.get_first_day_of_week())
 
 
 if __name__ == '__main__':
