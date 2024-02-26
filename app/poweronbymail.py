@@ -130,7 +130,7 @@ class POBE():
             sys.exit()
 
     def get_first_day_of_week(self):
-        today = datetime.date.today()
+        today = datetime.today()
         first_day = today - datetime.timedelta(days=today.weekday())
         first_day_midnight = datetime.datetime.combine(
             first_day, datetime.time.min)
