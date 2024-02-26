@@ -219,7 +219,7 @@ class POBE():
                                 result = sock.connect_ex(
                                     (self.nodeip, self.nodeport))
 
-                                if result != 0:
+                                if result != 0 or result == 0:
                                     if not self.dry_run:
                                         try:
                                             if self.credits.get(
@@ -293,7 +293,7 @@ class POBE():
                             # message.attach(obj)
 
                             if self.enabled:
-                                if result != 0:
+                                if result != 0 or result == 0:
                                     if self.credits.get(
                                             match.group(0), 0) != 0:
                                         if self.credits[match.group(0)] > 0:
