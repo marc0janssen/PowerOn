@@ -129,7 +129,7 @@ class POBE():
                             f'{config_dir}{self.exampleconfigfile}')
             sys.exit()
 
-    def get_first_day_of_week():
+    def get_first_day_of_week(self):
         today = datetime.date.today()
         first_day = today - datetime.timedelta(days=today.weekday())
         first_day_midnight = datetime.datetime.combine(
@@ -435,7 +435,7 @@ class POBE():
                 f"Can't save file {self.state_filePath}."
             )
 
-        logging.info(self.get_first_day_of_week(self))
+        logging.info(self.get_first_day_of_week())
 
 
 if __name__ == '__main__':
