@@ -302,6 +302,8 @@ class POBE():
 
                                         if credit > 0:
                                             credit -= 1
+                                            self.credits[match.group(0)] = \
+                                                str(credit)
 
                                         body = (
                                             f"Hi,\n\n {self.nodename} "
