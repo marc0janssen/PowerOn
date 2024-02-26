@@ -23,7 +23,6 @@ MAIL_SENDER = user@domain.tld
 KEYWORD = keyword
 ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
 ALLOWED_CREDITS = -1,2,5
-ALLOWED_RESET = weekly|monthly
 
 [POWEROFF]
 KEYWORD = keyword
