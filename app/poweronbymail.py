@@ -42,8 +42,8 @@ class POBE():
         self.state_file = "poweron.json"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
+        self.state_filePath = f"{config_dir}{self.state_file}"
         self.log_filePath = f"{log_dir}{self.log_file}"
-        self.state_filePath = f"{log_dir}{self.state_file}"
 
         try:
             with open(self.config_filePath, "r") as f:
