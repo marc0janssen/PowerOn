@@ -399,6 +399,17 @@ class POBE():
         imap.close()
         imap.logout()
 
+        # Save state to jsonfile
+        try:
+            with open(self.state_filePath, 'w') as json_file:
+                json.dump(self.credits, json_file)
+
+        except IOError or FileNotFoundError:
+            logging.error(
+                f"Can't open file {self.state_filePath}"
+                f", using default values from ini."
+            )
+
 
 if __name__ == '__main__':
 
