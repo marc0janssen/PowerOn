@@ -12,6 +12,7 @@ import configparser
 import shutil
 import smtplib
 import socket
+import json
 
 from datetime import datetime
 from email.header import decode_header
@@ -38,9 +39,11 @@ class POBE():
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"
         self.log_file = "poweronbymail.log"
+        self.state_file = "poweron.json"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
         self.log_filePath = f"{log_dir}{self.log_file}"
+        self.state_filePath = f"{log_dir}{self.state_file}"
 
         try:
             with open(self.config_filePath, "r") as f:
@@ -77,6 +80,11 @@ class POBE():
                 self.keyword = self.config['POWERON']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['POWERON']['ALLOWED_SENDERS'].split(","))
+                self.allowed_credits = list(
+                    self.config['POWERON']['ALLOWED_CREDITS'].split(","))
+                self.credits = dict(
+                    zip(self.allowed_senders, self.allowed_credits)
+                    )
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -99,6 +107,17 @@ class POBE():
                 )
 
                 sys.exit()
+
+            # Get state from jsonfile
+            try:
+                with open(self.state_filePath, 'r') as json_file:
+                    self.credits = json.load(json_file)
+
+            except IOError or FileNotFoundError:
+                logging.error(
+                    f"Can't open file {self.state_filePath}"
+                    f", using default values from ini."
+                )
 
         except IOError or FileNotFoundError:
             logging.error(
