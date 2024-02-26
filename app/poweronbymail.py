@@ -112,7 +112,9 @@ class POBE():
             try:
 
                 # check if it is midnight on monday.
-                # if so, reset the counters
+                # if so, reset the counters, by not reading the state.
+                # State will be written at the end of the script woth
+                # the default values.
                 now = datetime.now()
                 current_date_time = now.strftime("%Y-%m-%d %H:%M:%S")
                 if self.get_first_day_of_week() != current_date_time:
@@ -308,9 +310,12 @@ class POBE():
                             if self.enabled:
                                 if result != 0:
 
+                                    # Get the credits for the is user
+                                    # Check is it's not ZERO
+                                    # (so users with credits ">0" or "-1")
                                     credit = int(self.credits[match.group(0)])
-
                                     if credit != 0:
+                                        # If credits greater than 0 do a "-1"
                                         if credit > 0:
                                             credit -= 1
                                             self.credits[match.group(0)] = \
