@@ -222,7 +222,10 @@ class POBE():
                                 if result != 0:
                                     if not self.dry_run:
                                         try:
-                                            send_magic_packet(self.macaddress)
+                                            if self.credits.get(
+                                                    match.group(0), 0) != 0:
+                                                send_magic_packet(
+                                                    self.macaddress)
 
                                         except ValueError:
                                             logging.error(
@@ -291,12 +294,24 @@ class POBE():
 
                             if self.enabled:
                                 if result != 0:
-                                    body = (
-                                        f"Hi,\n\n {self.nodename} "
-                                        f"wordt aangezet, "
-                                        f"even geduld.\n\n"
-                                        f"Fijne dag!\n\n"
-                                    )
+                                    if self.credits.get(
+                                            match.group(0), 0) != 0:
+                                        if self.credits[match.group(0)] > 0:
+                                            self.credits[match.group(0)] -= 1
+
+                                        body = (
+                                            f"Hi,\n\n {self.nodename} "
+                                            f"wordt aangezet, "
+                                            f"even geduld.\n\n"
+                                            f"Fijne dag!\n\n"
+                                        )
+                                    else:
+                                        body = (
+                                            f"Hi,\n\n {self.nodename} "
+                                            f"wordt niet aangezet, "
+                                            f"je credits zijn op.\n\n"
+                                            f"Fijne dag!\n\n"
+                                        )
                                 else:
                                     body = (
                                         f"Hi,\n\n {self.nodename} is al aan, "
