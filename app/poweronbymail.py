@@ -435,7 +435,7 @@ class POBE():
                 f"Can't save file {self.state_filePath}."
             )
 
-        logging.info(self.get_first_day_of_week())
+        logging.info(self.get_first_day_of_week(self))
 
 
 if __name__ == '__main__':
