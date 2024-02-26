@@ -325,6 +325,8 @@ class POBE():
                                             f"Hi,\n\n {self.nodename} "
                                             f"wordt aangezet, "
                                             f"even geduld.\n\n"
+                                            f"Emby kan nog {credit} keer"
+                                            f"aangezet worden deze week.\n\n"
                                             f"Fijne dag!\n\n"
                                         )
                                     else:
