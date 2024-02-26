@@ -114,7 +114,7 @@ class POBE():
                     self.credits = json.load(json_file)
 
             except IOError or FileNotFoundError:
-                logging.error(
+                logging.info(
                     f"Can't open file {self.state_filePath}"
                     f", using default values from ini."
                 )
