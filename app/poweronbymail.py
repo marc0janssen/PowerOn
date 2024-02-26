@@ -406,8 +406,7 @@ class POBE():
 
         except IOError or FileNotFoundError:
             logging.error(
-                f"Can't open file {self.state_filePath}"
-                f", using default values from ini."
+                f"Can't save file {self.state_filePath}."
             )
 
 
