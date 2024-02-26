@@ -294,12 +294,10 @@ class POBE():
 
                             if self.enabled:
                                 if result != 0 or result == 0:
-                                    if self.credits.get(
-                                            match.group(0), 0) != 0:
 
-                                        credit = int(
-                                            self.credits[match.group(0)])
+                                    credit = int(self.credits[match.group(0)])
 
+                                    if credit != 0:
                                         if credit > 0:
                                             credit -= 1
                                             self.credits[match.group(0)] = \
