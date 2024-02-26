@@ -14,7 +14,7 @@ import smtplib
 import socket
 import json
 
-from datetime import datetime
+from datetime import datetime, timedelta, time
 from email.header import decode_header
 from wakeonlan import send_magic_packet
 from email.mime.multipart import MIMEMultipart
@@ -131,9 +131,9 @@ class POBE():
 
     def get_first_day_of_week(self):
         today = datetime.today()
-        first_day = today - datetime.timedelta(days=today.weekday())
-        first_day_midnight = datetime.datetime.combine(
-            first_day, datetime.time.min)
+        first_day = today - timedelta(days=today.weekday())
+        first_day_midnight = datetime.combine(
+            first_day, time.min)
         return first_day_midnight
 
     def writeLog(self, init, msg):
