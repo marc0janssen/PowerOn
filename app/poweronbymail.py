@@ -129,6 +129,13 @@ class POBE():
                             f'{config_dir}{self.exampleconfigfile}')
             sys.exit()
 
+    def get_first_day_of_week():
+        today = datetime.date.today()
+        first_day = today - datetime.timedelta(days=today.weekday())
+        first_day_midnight = datetime.datetime.combine(
+            first_day, datetime.time.min)
+        return first_day_midnight
+
     def writeLog(self, init, msg):
         try:
             if init:
@@ -219,7 +226,7 @@ class POBE():
                                 result = sock.connect_ex(
                                     (self.nodeip, self.nodeport))
 
-                                if result != 0 or result == 0:
+                                if result != 0:
                                     if not self.dry_run:
                                         try:
                                             if self.credits.get(
@@ -293,7 +300,7 @@ class POBE():
                             # message.attach(obj)
 
                             if self.enabled:
-                                if result != 0 or result == 0:
+                                if result != 0:
 
                                     credit = int(self.credits[match.group(0)])
 
@@ -427,6 +434,8 @@ class POBE():
             logging.error(
                 f"Can't save file {self.state_filePath}."
             )
+
+        logging.info(self.get_first_day_of_week())
 
 
 if __name__ == '__main__':
