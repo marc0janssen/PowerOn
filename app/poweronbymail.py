@@ -296,7 +296,7 @@ class POBE():
                                 if result != 0 or result == 0:
                                     if self.credits.get(
                                             match.group(0), 0) != 0:
-                                        if self.credits[match.group(0)] > 0:
+                                        if int(self.credits[match.group(0)]) > 0:
                                             self.credits[match.group(0)] -= 1
 
                                         body = (
