@@ -324,12 +324,16 @@ class POBE():
                                         body = (
                                             f"Hi,\n\n {self.nodename} "
                                             f"wordt aangezet, "
-                                            f"even geduld.\n\n"
-                                            f"Er kan nog {credit} keer een"
-                                            f"verzoek gedaan worden deze week "
-                                            f"om {self.nodename} aan "
-                                            f"te zetten.\n\nFijne dag!\n\n"
-                                        )
+                                            f"even geduld.\n\n")
+
+                                        if credit > -1:
+                                            body += (
+                                                f"Er kan nog {credit} keer een"
+                                                f" verzoek gedaan worden deze"
+                                                f" week om {self.nodename} aan"
+                                                f" te zetten.\n\n")
+
+                                        body += "Fijne dag!\n\n"
                                     else:
                                         body = (
                                             f"Hi,\n\n {self.nodename} "
