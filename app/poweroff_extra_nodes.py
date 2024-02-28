@@ -187,7 +187,8 @@ class EXTRA_NODES():
                                     self.userPushover.send_message(
                                         message=f"PowerOff Extra Nodes - "
                                         f"SLEEP command sent for "
-                                        f"{self.nodename[node]}\n"
+                                        f"{self.nodename[node]}\n",
+                                        sound=self.pushover_sound
                                         )
 
                                 logging.info(

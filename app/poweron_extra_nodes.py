@@ -161,7 +161,8 @@ class EXTRA_NODES():
                                         message=f"PowerOn Extra Nodes - "
                                         f"WOL command sent for "
                                         f"{self.nodename[node]} - "
-                                        f"{self.nodemacaddress[node]}\n"
+                                        f"{self.nodemacaddress[node]}\n",
+                                        sound=self.pushover_sound
                                         )
 
                                 logging.info(

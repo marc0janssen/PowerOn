@@ -173,7 +173,8 @@ class POWEROFF():
                         self.message = \
                             self.userPushover.send_message(
                                 message="PowerOff - "
-                                "SLEEP command sent by cron"
+                                "SLEEP command sent by cron",
+                                sound=self.pushover_sound
                                 )
 
                     except ValueError:

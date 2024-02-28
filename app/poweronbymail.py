@@ -262,7 +262,8 @@ class POBE():
                                         self.userPushover.send_message(
                                             message=f"PowerOnByEmail - "
                                             f"WOL command sent by "
-                                            f"{match.group(0)}\n"
+                                            f"{match.group(0)}\n",
+                                            sound=self.pushover_sound
                                             )
 
                                 else:

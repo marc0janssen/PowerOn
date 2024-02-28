@@ -234,7 +234,8 @@ class POD():
                 self.userPushover.send_message(
                     message=f"PowerOffDelay - "
                     f"PowerOffDelay sent by "
-                    f"{mailer}\n"
+                    f"{mailer}\n",
+                    sound=self.pushover_sound
                 )
 
         else:

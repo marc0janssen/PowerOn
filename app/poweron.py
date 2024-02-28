@@ -139,7 +139,8 @@ class POWERON():
                         self.message = \
                             self.userPushover.send_message(
                                 message="PowerOn - "
-                                "WOL command sent by cron"
+                                "WOL command sent by cron",
+                                sound=self.pushover_sound
                                 )
 
                     except ValueError:
