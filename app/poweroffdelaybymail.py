@@ -81,8 +81,8 @@ class POD():
                     self.config['EXTENDTIME']['ALLOWED_SENDERS'].split(","))
                 self.extendhour = \
                     self.config['EXTENDTIME']['EXTEND_TIME_IN_HOURS']
-                self.maxhour = self.config['EXTENDTIME']
-                ['MAX_SHUTDOWN_HOUR_TIME']
+                self.maxhour = \
+                    self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
                 self.defaultminutes = \
                     self.config['EXTENDTIME']['DEFAULT_MINUTES']
                 self.maxshutdowntime = (
@@ -168,11 +168,8 @@ class POD():
                                 # then always shutdown at self.maxhour
 
                                 maxhour_compare = "24" if (
-                                    self.config['EXTENDTIME']
-                                    ['MAX_SHUTDOWN_HOUR_TIME']
-                                    in ["0", "00"]) else \
-                                    self.config['EXTENDTIME']
-                                ['MAX_SHUTDOWN_HOUR_TIME']
+                                    self.maxhour in ["0", "00"]) else \
+                                    self.maxhour
 
                                 if int(poweroffhours[0]) >= \
                                         int(maxhour_compare):
