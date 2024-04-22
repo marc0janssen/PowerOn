@@ -179,7 +179,7 @@ class POD():
                                 else:
                                     line_parts[1] = (
                                         f"{poweroffhours[0]},"
-                                        f"{self.maxhour}"
+                                        f"{self.maxhour - self.maxhour}"
                                     )
 
                                     # format the first shutdown time
