@@ -31,7 +31,7 @@ class POBE():
 
         config_dir = "/config/"
         app_dir = "/app/"
-        log_dir = "/logging/poweron/"
+        log_dir = "/var/log/"
 
         self.config_file = "poweron.ini"
         self.exampleconfigfile = "poweron.ini.example"

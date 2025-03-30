@@ -31,7 +31,7 @@ class POD():
 
         config_dir = "/config/"
         app_dir = "/app/"
-        log_dir = "/logging/poweron/"
+        log_dir = "/var/log/"
 
         self.crontab_file = "/etc/crontabs/root"
         self.shutdowntime = "00:00"
