@@ -1,18 +1,26 @@
 [GENERAL]
+; Toggle the automation. Set to OFF to completely disable the service via cron.
 ENABLED = ON
+; Use the dry-run mode while testing: actions are logged but no WOL packets
+; or remote commands are sent.
 DRY_RUN = ON
+; Enable verbose logging when you need additional troubleshooting details.
 VERBOSE_LOGGING = ON
 
 [NODE]
+; Configuration of the primary node controlled by the service.
 NODE_NAME = DS1513
 NODE_MAC = FF:FF:11:11:22:22
 NODE_IP = 192.168.1.1
+; TCP port checked before issuing a wake-up request.
 NODE_PORT = 80
+; SSH configuration is optional – leave blank to skip remote commands.
 NODE_SSHPORT = 22
 NODE_USER = user
 NODE_PWD = password
 
 [MAIL]
+; IMAP settings used to fetch incoming automation commands.
 MAIL_PORT = 587
 MAIL_SERVER = imap.server.tld
 MAIL_LOGIN = user@domain.tld
@@ -20,30 +28,37 @@ MAIL_PASSWORD = pa55w0rd
 MAIL_SENDER = user@domain.tld
 
 [POWERON]
+; Keyword that has to appear in the mail subject to power on the node.
 KEYWORD = keyword
-ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
-ALLOWED_CREDITS = -1,2,5
+; Comma separated list of allowed senders.
+ALLOWED_SENDERS = user1@domain1.tld, user2@domain2.tld, user3@domain3.tld
+; Number of available wake credits per sender. Use -1 for unlimited.
+ALLOWED_CREDITS = -1, 2, 5
 
 [POWEROFF]
 KEYWORD = keyword
-ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
+ALLOWED_SENDERS = user1@domain1.tld, user2@domain2.tld, user3@domain3.tld
 POWEROFFCOMMAND = "poweroff"
 
 [EXTENDTIME]
 KEYWORD = keyword
-ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
+ALLOWED_SENDERS = user1@domain1.tld, user2@domain2.tld, user3@domain3.tld
 DEFAULT_HOUR = 1
 DEFAULT_MINUTES = 30
+; Optional – extend the shutdown by a fixed amount when the mail does not
+; specify an explicit duration.
 EXTEND_TIME_IN_HOURS = 2
+; Maximum hour allowed before forcing a shutdown.
 MAX_SHUTDOWN_HOUR_TIME = 5
 
 [EXTRANODES]
-NODE_NAME = node1,node2,node3
-NODE_PWD = password1,password2,password3
-NODE_USER = user1,user2,user3
-NODE_IP = 192.168.2.1,192.168.2.2,192.168.2.3
-NODE_SSHPORT = 22,22,22,22
-NODE_MAC_ADDRESS = 11:22:33:44:55:66,66:55:44:33:22:11,11:33:22:55:44:66
+; Configure additional machines that must mirror the primary node state.
+NODE_NAME = node1, node2, node3
+NODE_PWD = password1, password2, password3
+NODE_USER = user1, user2, user3
+NODE_IP = 192.168.2.1, 192.168.2.2, 192.168.2.3
+NODE_SSHPORT = 22, 2222, 22
+NODE_MAC_ADDRESS = 11:22:33:44:55:66, 66:55:44:33:22:11, 11:33:22:55:44:66
 POWEROFFCOMMAND = "poweroff"
 
 [PUSHOVER]
