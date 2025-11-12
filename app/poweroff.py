@@ -1,251 +1,125 @@
-# Name: poweroff
-# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
-# date: 2023-12-29 13:33:00
-# update: 2023-12-29 13:33:00
-
+"""Cron-based shutdown utility."""
 import logging
-import sys
-import configparser
-import shutil
-import socket
-import subprocess
 import re
+import subprocess
 
-from datetime import datetime
 from chump import Application
 
+from common import BasePowerService, ConfigError, ConfigOption
 
-class POWEROFF():
 
-    def __init__(self):
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            level=logging.INFO)
+class PowerOff(BasePowerService):
+    LOG_FILENAME = "poweron.log"
+    CRONTAB_FILE = "/etc/crontabs/root"
 
-        config_dir = "/config/"
-        app_dir = "/app/"
-        log_dir = "/var/log/"
-
-        self.config_file = "poweron.ini"
-        self.exampleconfigfile = "poweron.ini.example"
-        self.log_file = "poweron.log"
-
-        self.config_filePath = f"{config_dir}{self.config_file}"
-        self.log_filePath = f"{log_dir}{self.log_file}"
-
+    def __init__(self) -> None:
+        super().__init__(self.LOG_FILENAME)
         try:
-            with open(self.config_filePath, "r") as f:
-                f.close()
-            try:
-                self.config = configparser.ConfigParser()
-                self.config.read(self.config_filePath)
+            self.nodename = self.require(ConfigOption("NODE", "NODE_NAME"))
+            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
+            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
+            self.nodesshport = self.require_int(ConfigOption("NODE", "NODE_SSHPORT"))
+            self.nodeuser = self.require(ConfigOption("NODE", "NODE_USER"))
+            self.nodepwd = self.require(ConfigOption("NODE", "NODE_PWD"))
 
-                # GENERAL
-                self.enabled = True if (
-                    self.config['GENERAL']['ENABLED'] == "ON") else False
-                self.dry_run = True if (
-                    self.config['GENERAL']['DRY_RUN'] == "ON") else False
-                self.verbose_logging = True if (
-                    self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
-                    else False
-
-                # NODE
-                self.nodename = self.config['NODE']['NODE_NAME']
-                self.nodeip = self.config['NODE']['NODE_IP']
-                self.nodeport = int(self.config['NODE']['NODE_PORT'])
-                self.nodesshport = int(self.config['NODE']['NODE_SSHPORT'])
-                self.nodeuser = self.config['NODE']['NODE_USER']
-                self.nodepwd = self.config['NODE']['NODE_PWD']
-
-                # POWEROFF
-                self.poweroffcommand = \
-                    self.config['POWEROFF']['POWEROFFCOMMAND']
-
-                # EXTENDTIME
-                self.defaulthour = self.config['EXTENDTIME']['DEFAULT_HOUR']
-                self.defaultminutes = \
-                    self.config['EXTENDTIME']['DEFAULT_MINUTES']
-                self.maxhour = \
-                    self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
-
-                # PUSHOVER
-                self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
-                self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
-                self.pushover_sound = self.config['PUSHOVER']['SOUND']
-
-            except KeyError as e:
-                logging.error(
-                    f"Seems a key(s) {e} is missing from INI file. "
-                    f"Please check for mistakes. Exiting."
-                )
-
-                sys.exit()
-
-            except ValueError as e:
-                logging.error(
-                    f"Seems a invalid value in INI file. "
-                    f"Please check for mistakes. Exiting. "
-                    f"MSG: {e}"
-                )
-
-                sys.exit()
-
-        except IOError or FileNotFoundError:
-            logging.error(
-                f"Can't open file {self.config_filePath}"
-                f", creating example INI file."
+            self.poweroffcommand = self.require(
+                ConfigOption("POWEROFF", "POWEROFFCOMMAND")
             )
 
-            shutil.copyfile(f'{app_dir}{self.exampleconfigfile}',
-                            f'{config_dir}{self.exampleconfigfile}')
-            sys.exit()
-
-    def writeLog(self, init, msg):
-        try:
-            if init:
-                logfile = open(self.log_filePath, "w")
-            else:
-                logfile = open(self.log_filePath, "a")
-            logfile.write(f"{datetime.now()} - {msg}")
-            logfile.close()
-        except IOError:
-            logging.error(
-                f"Can't write file {self.log_filePath}."
+            self.defaulthour = self.require(ConfigOption("EXTENDTIME", "DEFAULT_HOUR"))
+            self.defaultminutes = self.require(
+                ConfigOption("EXTENDTIME", "DEFAULT_MINUTES")
+            )
+            self.maxhour = self.require(
+                ConfigOption("EXTENDTIME", "MAX_SHUTDOWN_HOUR_TIME")
             )
 
-    def run(self):
-        # Setting for PushOver
-        self.appPushover = Application(self.pushover_token_api)
-        self.userPushover = self.appPushover.get_user(self.pushover_user_key)
+            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
+            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
+            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+        except ConfigError as error:
+            self.exit_with_config_error(error)
+
+    def _pushover(self):
+        return self.pushover_user(factory=Application)
+
+    def _update_crontab_defaults(self) -> None:
+        try:
+            with open(self.CRONTAB_FILE, "r", encoding="utf-8") as file:
+                content = file.read()
+        except FileNotFoundError:
+            logging.error("File not found - %s.", self.CRONTAB_FILE)
+            return
+        except OSError as exc:
+            logging.error("Error reading the file %s: %s", self.CRONTAB_FILE, exc)
+            return
+
+        lines = content.split("\n")
+        for index, line in enumerate(lines):
+            if "poweroff.py" in line:
+                parts = line.split()
+                parts[1] = f"{self.defaulthour},{self.maxhour}"
+                parts[0] = self.defaultminutes
+                lines[index] = " ".join(parts)
+                break
+
+        new_text = "\n".join(lines)
+        try:
+            with open(self.CRONTAB_FILE, "w", encoding="utf-8") as file:
+                file.write(new_text)
+        except OSError as exc:
+            logging.error("Error writing the file %s: %s", self.CRONTAB_FILE, exc)
+
+    def run(self) -> None:
+        user = self._pushover()
 
         if self.dry_run:
-            logging.info(
-                "********************************************")
-            logging.info(
-                "**** DRY RUN, NOTHING WILL SET TO SLEEP ****")
-            logging.info(
-                "********************************************")
+            logging.info("********************************************")
+            logging.info("**** DRY RUN, NOTHING WILL SET TO SLEEP ****")
+            logging.info("********************************************")
+            self.write_log("PowerOff - Dry run.\n")
 
-            self.writeLog(
-                False,
-                "PowerOff - Dry run.\n"
-            )
+        if not self.enabled:
+            self.verbose("PowerOff - Service is disabled by cron")
+            self.write_log("PowerOff - Service is disabled by cron\n")
+            return
 
-        if self.enabled:
-            sock = socket.socket(
-                socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(
-                (self.nodeip, self.nodeport))
-            if result == 0:
-                if not self.dry_run:
-                    try:
-                        # Execute the shell command
+        if not self.is_port_open(self.nodeip, self.nodeport):
+            logging.info("PowerOff - Node already down by cron")
+            self.write_log("PowerOff - Node already down by cron\n")
+            return
 
-                        ecsapedpwd = re.escape(
-                            self.nodepwd)
+        if self.dry_run:
+            return
 
-                        result = subprocess.run(
-                            ["sshpass",
-                                "-p",
-                                f"{self.nodepwd}",
-                                "ssh",
-                                "-p",
-                                f"{self.nodesshport}",
-                                "-t",
-                                f"{self.nodeuser}"
-                                f"@{self.nodeip}",
-                                f"echo {ecsapedpwd}"
-                                f"|sudo -S bash -c "
-                                f"{self.poweroffcommand}"],
-                            capture_output=True, text=True)
+        escaped_pwd = re.escape(self.nodepwd)
+        command = [
+            "sshpass",
+            "-p",
+            self.nodepwd,
+            "ssh",
+            "-p",
+            str(self.nodesshport),
+            "-t",
+            f"{self.nodeuser}@{self.nodeip}",
+            f"echo {escaped_pwd}|sudo -S bash -c '{self.poweroffcommand}'",
+        ]
 
-                        # Print the command output
-                        logging.info(result.stdout)
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.stdout:
+            logging.info(result.stdout.strip())
+        if result.stderr:
+            logging.error(result.stderr.strip())
 
-                        logging.info(
-                            "PowerOff - Sending SLEEP command by cron"
-                            )
-                        self.writeLog(
-                            False,
-                            "PowerOff - Sending SLEEP command by cron\n"
-                        )
+        logging.info("PowerOff - Sending SLEEP command by cron")
+        self.write_log("PowerOff - Sending SLEEP command by cron\n")
+        user.send_message(
+            message="PowerOff - SLEEP command sent by cron",
+            sound=self.pushover_sound,
+        )
 
-                        self.message = \
-                            self.userPushover.send_message(
-                                message="PowerOff - "
-                                "SLEEP command sent by cron",
-                                sound=self.pushover_sound
-                                )
-
-                    except ValueError:
-                        logging.error(
-                            "Invalid MAC-address in INI."
-                        )
-                        sys.exit()
-
-                try:
-                    with open("/etc/crontabs/root", 'r') as file:
-                        content = file.read()
-                        file.close()
-
-                        lines = content.split('\n')
-
-                        for line in range(len(lines)):
-                            if "poweroff.py" in lines[line]:
-
-                                line_parts = lines[line].split()
-                                line_parts[1] = (
-                                    f"{self.defaulthour},"
-                                    f"{self.maxhour}"
-                                )
-                                line_parts[0] = self.defaultminutes
-
-                                lines[line] = ' '.join(line_parts)
-                                break
-
-                        new_text = '\n'.join(lines)
-
-                        try:
-                            with open("/etc/crontabs/root", 'w') as file:
-                                file.write(new_text)
-                                file.close()
-
-                        except IOError:
-                            logging.error(
-                                "Error writing the "
-                                "file /etc/crontabs/root.")
-
-                except FileNotFoundError:
-                    logging.error(
-                        "File not found - "
-                        "/etc/crontabs/root.")
-                except IOError:
-                    logging.error(
-                        "Error reading the"
-                        " file /etc/crontabs/root.")
-
-            else:
-                logging.info(
-                    "PowerOff - Node already down"
-                    " by cron"
-                )
-                self.writeLog(
-                    False,
-                    "PowerOff - Node already down by cron\n"
-                )
-        else:
-            if self.verbose_logging:
-                logging.info(
-                    "PowerOff - Service is disabled by cron"
-                )
-            self.writeLog(
-                False,
-                "PowerOff - Service is disabled by cron\n"
-            )
+        self._update_crontab_defaults()
 
 
-if __name__ == '__main__':
-
-    poweroff = POWEROFF()
-    poweroff.run()
-    poweroff = None
+if __name__ == "__main__":
+    PowerOff().run()

@@ -1,493 +1,258 @@
-# Name: ppweroffdelay
-# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
-# date: 2023-12-29 21:34:00
-# update: 2023-12-29 21:34:00
-
-import imaplib
-import email
-import re
+"""Extend shutdown schedules based on e-mail commands."""
 import logging
-import sys
-import configparser
-import shutil
+import re
 import smtplib
-import socket
 import subprocess
-
-from datetime import datetime
-from email.header import decode_header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from socket import gaierror
+
 from chump import Application
 
+from common import ConfigError, ConfigOption, MailPowerService
 
-class POD():
 
-    def __init__(self):
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            level=logging.INFO)
+class PowerOffDelayByEmail(MailPowerService):
+    LOG_FILENAME = "poweronbymail.log"
+    CRONTAB_FILE = "/etc/crontabs/root"
 
-        config_dir = "/config/"
-        app_dir = "/app/"
-        log_dir = "/var/log/"
-
-        self.crontab_file = "/etc/crontabs/root"
+    def __init__(self) -> None:
+        super().__init__(self.LOG_FILENAME)
         self.shutdowntime = "00:00"
         self.maxshutdowntime = "00:00"
-
-        self.config_file = "poweron.ini"
-        self.exampleconfigfile = "poweron.ini.example"
-        self.log_file = "poweronbymail.log"
-
-        self.config_filePath = f"{config_dir}{self.config_file}"
-        self.log_filePath = f"{log_dir}{self.log_file}"
-
         try:
-            with open(self.config_filePath, "r") as f:
-                f.close()
-            try:
-                self.config = configparser.ConfigParser()
-                self.config.read(self.config_filePath)
+            self.nodename = self.require(ConfigOption("NODE", "NODE_NAME"))
+            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
+            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
 
-                # GENERAL
-                self.enabled = True if (
-                    self.config['GENERAL']['ENABLED'] == "ON") else False
-                self.dry_run = True if (
-                    self.config['GENERAL']['DRY_RUN'] == "ON") else False
-                self.verbose_logging = True if (
-                    self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
-                    else False
+            self.keyword = self.require(ConfigOption("EXTENDTIME", "KEYWORD"))
+            self.allowed_senders = self.require_list(
+                ConfigOption("EXTENDTIME", "ALLOWED_SENDERS")
+            )
+            self.extend_hours = self.require_int(
+                ConfigOption("EXTENDTIME", "EXTEND_TIME_IN_HOURS")
+            )
+            self.maxhour = self.require(ConfigOption("EXTENDTIME", "MAX_SHUTDOWN_HOUR_TIME"))
+            self.defaultminutes = self.require(
+                ConfigOption("EXTENDTIME", "DEFAULT_MINUTES")
+            )
+            self.defaulthour = self.require(ConfigOption("EXTENDTIME", "DEFAULT_HOUR"))
+            self.maxshutdowntime = (
+                f"{self.maxhour.zfill(2)}:{self.defaultminutes.zfill(2)}"
+            )
 
-                # NODE
-                self.nodename = self.config['NODE']['NODE_NAME']
-                self.macaddress = self.config['NODE']['NODE_MAC']\
-                    .replace(":", "-").lower()
-                self.nodeip = self.config['NODE']['NODE_IP']
-                self.nodeport = int(self.config['NODE']['NODE_PORT'])
+            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
+            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
+            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+        except ConfigError as error:
+            self.exit_with_config_error(error)
 
-                # MAIL
-                self.mail_port = int(
-                    self.config['MAIL']['MAIL_PORT'])
-                self.mail_server = self.config['MAIL']['MAIL_SERVER']
-                self.mail_login = self.config['MAIL']['MAIL_LOGIN']
-                self.mail_password = self.config['MAIL']['MAIL_PASSWORD']
-                self.mail_sender = self.config['MAIL']['MAIL_SENDER']
+    def _pushover(self):
+        return self.pushover_user(factory=Application)
 
-                # EXTENDTIME
-                self.keyword = self.config['EXTENDTIME']['KEYWORD']
-                self.allowed_senders = list(
-                    self.config['EXTENDTIME']['ALLOWED_SENDERS'].split(","))
-                self.extendhour = \
-                    self.config['EXTENDTIME']['EXTEND_TIME_IN_HOURS']
-                self.maxhour = \
-                    self.config['EXTENDTIME']['MAX_SHUTDOWN_HOUR_TIME']
-                self.defaultminutes = \
-                    self.config['EXTENDTIME']['DEFAULT_MINUTES']
-                self.maxshutdowntime = (
-                    f"{self.maxhour.zfill(2)}:{self.defaultminutes.zfill(2)}")
+    def _extract_sender(self, message) -> str:
+        header = message.get("From", "")
+        decoded = MailPowerService.decode_header_value(header) if header else ""
+        match = re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", decoded)
+        return match.group(0) if match else ""
 
-                # PUSHOVER
-                self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
-                self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
-                self.pushover_sound = self.config['PUSHOVER']['SOUND']
+    def _send_status_mail(self, success: bool, sender: str) -> None:
+        message = MIMEMultipart()
+        message["From"] = self.mail_sender
+        message["To"] = ", ".join(self.allowed_senders)
+        message["Subject"] = f"PowerOffDelay - {self.nodename}"
 
-            except KeyError as e:
-                logging.error(
-                    f"Seems a key(s) {e} is missing from INI file. "
-                    f"Please check for mistakes. Exiting."
+        if not self.enabled:
+            body = (
+                f"Hi Hacker,\n\nDe service staat uit om {self.nodename} aan te kunnen zetten.\n"
+                "Je hoeft en kunt nu dus even geen commando's geven.\n\n"
+                "Fijne dag!\n\n"
+            )
+        elif success:
+            body = (
+                f"Hi Hacker,\n\n De node {self.nodename} blijft {self.extend_hours} uur extra aan.\n\n"
+                f"Deze opdracht komt van {sender}.\n\n"
+                f"De eindtijd is nu {self.shutdowntime}\n\n"
+            )
+            if self.shutdowntime != self.maxshutdowntime:
+                body += (
+                    "Als de eerste tijd is gepasseerd, is de volgende eindtijd "
+                    f"{self.maxshutdowntime}\n\n"
                 )
-
-                sys.exit()
-
-            except ValueError as e:
-                logging.error(
-                    f"Seems a invalid value in INI file. "
-                    f"Please check for mistakes. Exiting. "
-                    f"MSG: {e}"
-                )
-
-                sys.exit()
-
-        except IOError or FileNotFoundError:
-            logging.error(
-                f"Can't open file {self.config_filePath}"
-                f", creating example INI file."
-            )
-
-            shutil.copyfile(f'{app_dir}{self.exampleconfigfile}',
-                            f'{config_dir}{self.exampleconfigfile}')
-            sys.exit()
-
-    def writeLog(self, init, msg):
-        try:
-            if init:
-                logfile = open(self.log_filePath, "w")
-            else:
-                logfile = open(self.log_filePath, "a")
-            logfile.write(f"{datetime.now()} - {msg}")
-            logfile.close()
-        except IOError:
-            logging.error(
-                f"Can't write file {self.log_filePath}."
-            )
-
-    def changeCrontab(self, mailer):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex((self.nodeip, self.nodeport))
-
-        if result == 0:
-            if not self.dry_run:
-                try:
-                    with open(f"{self.crontab_file}", 'r') as file:
-                        content = file.read()
-                        file.close()
-
-                        lines = content.split('\n')
-
-                        for line in range(len(lines)):
-                            if "poweroff.py" in lines[line]:
-                                line_parts = lines[line].split()
-
-                                # als het voorbij
-                                # middernacht is
-                                # Dan bereken
-                                # juiste uur
-
-                                # Split the shoutdown hours
-                                poweroffhours = line_parts[1].split(',')
-
-                                # Add de extend hours to the first hour
-                                poweroffhours[0] = \
-                                    str((int(poweroffhours[0]) +
-                                         int(self.extendhour))
-                                        % 24)
-
-                                # if extend time is past self.maxhour,
-                                # then always shutdown at self.maxhour
-
-                                maxhour_compare = "24" if (
-                                    self.maxhour in ["0", "00"]) else \
-                                    self.maxhour
-
-                                if int(poweroffhours[0]) >= \
-                                        int(maxhour_compare):
-                                    line_parts[1] = self.maxhour
-
-                                    # format the first shutdown time
-                                    self.shutdowntime = (
-                                        f"{line_parts[1].zfill(2)}:"
-                                        f"{line_parts[0].zfill(2)}"
-                                    )
-                                else:
-                                    line_parts[1] = (
-                                        f"{poweroffhours[0]},"
-                                        f"{self.maxhour}"
-                                    )
-
-                                    # format the first shutdown time
-                                    self.shutdowntime = (
-                                        f"{poweroffhours[0].zfill(2)}:"
-                                        f"{line_parts[0].zfill(2)}"
-                                    )
-
-                                lines[line] = ' '.join(line_parts)
-                                break
-
-                        new_text = '\n'.join(lines)
-
-                        try:
-                            with open(f"{self.crontab_file}", 'w') as file:
-                                file.write(new_text)
-                                file.close()
-
-                                command = f"crontab {self.crontab_file}"
-                                command_result = subprocess.run(
-                                    command.split(),
-                                    capture_output=True,
-                                    text=True
-                                )
-                                logging.info(command_result)
-
-                        except IOError:
-                            logging.error(
-                                f"Error writing the "
-                                f"file {self.crontab_file}.")
-
-                except FileNotFoundError:
-                    logging.error(
-                        f"File not found - "
-                        f"{self.crontab_file}.")
-                except IOError:
-                    logging.error(
-                        f"Error reading the"
-                        f" file {self.crontab_file}.")
-
-            logging.info(
-                f"PowerOffDelay - PowerOffdelay by"
-                f" {mailer}"
-            )
-            self.writeLog(
-                False,
-                f"PowerOffDelay - PowerOffdelay by"
-                f" {mailer}\n"
-            )
-
-            self.message = \
-                self.userPushover.send_message(
-                    message=f"PowerOffDelay - "
-                    f"PowerOffDelay sent by "
-                    f"{mailer}\n",
-                    sound=self.pushover_sound
-                )
-
+            body += "Fijne dag!\n\n"
         else:
-            logging.info(
-                f"PowerOffDelay - Nodes not running"
-                f" by {mailer}"
-            )
-            self.writeLog(
-                False,
-                f"PowerOffDelay - Nodes "
-                f"not running by "
-                f"{mailer}\n"
+            body = (
+                f"Hi Hacker,\n\n De node {self.nodename} staat nu uit.\n"
+                f"Je kunt de tijd nu niet verhogen.\n\nDeze opdracht komt van {sender}.\n\n"
+                "Fijne dag!\n\n"
             )
 
-        return result
+        message.attach(MIMEText(body, _subtype="plain", _charset="UTF-8"))
 
-    def run(self):
-        # Setting for PushOver
-        self.appPushover = Application(self.pushover_token_api)
-        self.userPushover = self.appPushover.get_user(self.pushover_user_key)
+        try:
+            session = smtplib.SMTP(self.mail_server, self.mail_port)
+            session.starttls()
+            session.login(self.mail_login, self.mail_password)
+            session.sendmail(
+                self.mail_sender,
+                self.allowed_senders,
+                message.as_string(),
+            )
+            session.quit()
+        except (gaierror, ConnectionRefusedError):
+            logging.error("Failed to connect to the server. Bad connection settings?")
+        except smtplib.SMTPServerDisconnected:
+            logging.error("Failed to connect to the server. Wrong user/password?")
+        except smtplib.SMTPException as exc:
+            logging.error("SMTP error occurred: %s.", exc)
+        else:
+            self.verbose(
+                f"PowerOffDelay - Mail Sent to {', '.join(self.allowed_senders)}."
+            )
+            self.write_log(
+                f"PowerOffDelay - Mail Sent to {', '.join(self.allowed_senders)}.\n"
+            )
+
+    def _update_crontab(self) -> None:
+        try:
+            with open(self.CRONTAB_FILE, "r", encoding="utf-8") as file:
+                content = file.read()
+        except FileNotFoundError:
+            logging.error("File not found - %s.", self.CRONTAB_FILE)
+            return
+        except OSError as exc:
+            logging.error("Error reading the file %s: %s", self.CRONTAB_FILE, exc)
+            return
+
+        lines = content.split("\n")
+        shutdown_time = self.maxshutdowntime
+        for index, line in enumerate(lines):
+            if "poweroff.py" in line:
+                parts = line.split()
+                minutes = self.defaultminutes
+                current_hours = parts[1].split(",")[0]
+                try:
+                    base_hour = int(current_hours)
+                except ValueError:
+                    base_hour = int(self.defaulthour)
+                new_hour = (base_hour + self.extend_hours) % 24
+                max_compare = 24 if self.maxhour in {"0", "00"} else int(self.maxhour)
+
+                if new_hour >= max_compare:
+                    parts[1] = self.maxhour
+                    shutdown_time = self.maxshutdowntime
+                else:
+                    parts[1] = f"{new_hour},{self.maxhour}"
+                    shutdown_time = f"{str(new_hour).zfill(2)}:{minutes.zfill(2)}"
+
+                parts[0] = minutes
+                lines[index] = " ".join(parts)
+                break
+
+        self.shutdowntime = shutdown_time
 
         if self.dry_run:
-            logging.info(
-                "******************************************")
-            logging.info(
-                "**** DRY RUN, NOTHING WILL DE DELAYED ****")
-            logging.info(
-                "******************************************")
+            return
 
-            self.writeLog(
-                False,
-                "PowerOffDelay - Dry run.\n"
+        try:
+            with open(self.CRONTAB_FILE, "w", encoding="utf-8") as file:
+                file.write("\n".join(lines))
+        except OSError as exc:
+            logging.error("Error writing the file %s: %s", self.CRONTAB_FILE, exc)
+            return
+
+        result = subprocess.run(
+            ["crontab", self.CRONTAB_FILE], capture_output=True, text=True
+        )
+        if result.stdout:
+            logging.info(result.stdout.strip())
+        if result.stderr:
+            logging.error(result.stderr.strip())
+
+    def change_crontab(self, sender: str, user) -> bool:
+        node_running = self.is_port_open(self.nodeip, self.nodeport)
+        if not node_running:
+            logging.info("PowerOffDelay - Nodes not running by %s", sender)
+            self.write_log(
+                f"PowerOffDelay - Nodes not running by {sender}\n"
+            )
+            return False
+
+        self._update_crontab()
+
+        logging.info("PowerOffDelay - PowerOffdelay by %s", sender)
+        self.write_log(
+            f"PowerOffDelay - PowerOffdelay by {sender}\n"
+        )
+        user.send_message(
+            message=f"PowerOffDelay - PowerOffDelay sent by {sender}",
+            sound=self.pushover_sound,
+        )
+        return True
+
+    def run(self) -> None:
+        user = self._pushover()
+
+        if self.dry_run:
+            logging.info("******************************************")
+            logging.info("**** DRY RUN, NOTHING WILL DE DELAYED ****")
+            logging.info("******************************************")
+            self.write_log("PowerOffDelay - Dry run.\n")
+
+        mailbox = self.connect_mailbox()
+
+        for uid, message in self.iter_messages(mailbox):
+            subject = message.get("Subject", "")
+            subject_text = (
+                MailPowerService.decode_header_value(subject) if subject else ""
+            )
+            sender = self._extract_sender(message)
+
+            if subject_text.lower() != self.keyword.lower():
+                self.verbose(
+                    f"PowerOffDelay - Subject not recognized. Skipping message. {sender}"
+                )
+                self.write_log(
+                    f"PowerOffDelay - Subject not recognized. Skipping message. {sender}\n"
+                )
+                continue
+
+            self.verbose(
+                f"PowerOffDelay - Found matching subject from {sender}"
+            )
+            self.write_log(
+                f"PowerOffDelay - Found matching subject from {sender}\n"
             )
 
-        # create an IMAP4 class with SSL
-        imap = imaplib.IMAP4_SSL(self.mail_server)
-        # authenticate
-        imap.login(self.mail_login, self.mail_password)
+            if sender not in self.allowed_senders:
+                self.verbose(
+                    f"PowerOffDelay - sender not in list {sender}."
+                )
+                self.write_log(
+                    f"PowerOffDelay - sender not in list {sender}.\n"
+                )
+                continue
 
-        status, messages = imap.select("INBOX")
+            if not self.enabled:
+                self.verbose(
+                    f"PowerOffDelay - Service is disabled by {sender}"
+                )
+                self.write_log(
+                    f"PowerOffDelay - Service is disabled by {sender}\n"
+                )
+                self._send_status_mail(success=False, sender=sender)
+                continue
 
-        # total number of emails
-        messages = int(messages[0])
+            success = self.change_crontab(sender, user)
+            self._send_status_mail(success=success, sender=sender)
 
-        for i in range(1, messages+1):
+            if not self.dry_run:
+                mailbox.store(uid, "+FLAGS", "\\Deleted")
 
-            # fetch the email message by ID
-            res, msg = imap.fetch(str(i), "(RFC822)")
-            for response in msg:
-                if isinstance(response, tuple):
-                    # parse a bytes email into a message object
-                    msg = email.message_from_bytes(response[1])
-
-                    # decode the email subject
-                    subject, encoding = decode_header(msg["Subject"])[0]
-
-                    if isinstance(subject, bytes):
-                        # if it's a bytes, decode to str
-                        if encoding:
-                            subject = subject.decode(encoding)
-                        else:
-                            subject = subject.decode("utf-8")
-
-                    # decode email sender
-                    From, encoding = decode_header(msg.get("From"))[-1:][0]
-
-                    if isinstance(From, bytes):
-                        if encoding:
-                            From = From.decode(encoding)
-                        else:
-                            From = From.decode("utf-8")
-
-                    match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
-
-                    if str.lower(subject) == self.keyword.lower():
-
-                        if self.verbose_logging:
-                            logging.info(
-                                f"PowerOffDelay - Found matching subject from "
-                                f"{match.group(0)}"
-                            )
-                        self.writeLog(
-                            False, f"PowerOffDelay - Found matching "
-                            f"subject from "
-                            f"{match.group(0)}\n")
-
-                        if match.group(0) in self.allowed_senders:
-
-                            if self.enabled:
-
-                                result = self.changeCrontab(match.group(0))
-
-                            else:
-                                if self.verbose_logging:
-                                    logging.info(
-                                        f"PowerOffDelay - Service "
-                                        f"is disabled by "
-                                        f"{match.group(0)}"
-                                    )
-                                self.writeLog(
-                                    False,
-                                    f"PowerOffDelay - Service is disabled by "
-                                    f"{match.group(0)}\n"
-                                )
-
-                            sender_email = self.mail_sender
-                            receiver_email = ", ".join(self.allowed_senders)
-
-                            message = MIMEMultipart()
-                            message["From"] = sender_email
-                            message['To'] = receiver_email
-                            message['Subject'] = (
-                                f"PowerOffDelay - {self.nodename}"
-                            )
-
-                            if self.enabled:
-                                if result == 0:
-                                    body = (
-                                        f"Hi Hacker,\n\n De node"
-                                        f" {self.nodename} blijft 2 uur extra "
-                                        f"aan.\n\nDeze opdracht komt van "
-                                        f"{match.group(0)}.\n\n"
-                                        f"De eindtijd is nu "
-                                        f"{self.shutdowntime}\n\n"
-                                    )
-
-                                    if self.shutdowntime != \
-                                            self.maxshutdowntime:
-                                        body = (
-                                            f"{body}"
-                                            f"Als de eerst tijd is gepasseerd,"
-                                            f" is de volgende eindtijd "
-                                            f"{self.maxshutdowntime}\n\n"
-                                        )
-
-                                    body = (
-                                        f"{body}"
-                                        f"Fijne dag!\n\n"
-                                    )
-
-                                else:
-                                    body = (
-                                        f"Hi Hacker,\n\n De node "
-                                        f"{self.nodename} staat nu uit.\n"
-                                        f"Je kunt de tijd nu niet verhogen\n\n"
-                                        f"Deze opdracht komt van "
-                                        f"{match.group(0)}.\n\n"
-                                        f"Fijne dag!\n\n"
-                                    )
-                            else:
-                                body = (
-                                    f"Hi Hacker,\n\nDe service "
-                                    f"staat uit om {self.nodename} aan te "
-                                    f"kunnen zetten.\nJe hoeft en kunt nu dus "
-                                    f"even geen commando's geven.\n\n"
-                                    f"Deze opdracht komt van "
-                                    f"{match.group(0)}.\n\n"
-                                    f"Fijne dag!\n\n"
-                                )
-
-                            plain_text = MIMEText(
-                                body, _subtype='plain', _charset='UTF-8')
-                            message.attach(plain_text)
-
-                            my_message = message.as_string()
-
-                            try:
-                                email_session = smtplib.SMTP(
-                                    self.mail_server, self.mail_port)
-                                email_session.starttls()
-                                email_session.login(
-                                    self.mail_login, self.mail_password)
-                                email_session.sendmail(
-                                    sender_email,
-                                    self.allowed_senders,
-                                    my_message
-                                )
-                                email_session.quit()
-
-                                if self.verbose_logging:
-                                    logging.info(
-                                        f"PowerOffDelay - Mail Sent to "
-                                        f"{receiver_email}."
-                                    )
-
-                                self.writeLog(
-                                    False,
-                                    f"PowerOffDelay - Mail Sent to "
-                                    f"{receiver_email}.\n"
-                                )
-
-                            except (gaierror, ConnectionRefusedError):
-                                logging.error(
-                                    "Failed to connect to the server. "
-                                    "Bad connection settings?")
-                            except smtplib.SMTPServerDisconnected:
-                                logging.error(
-                                    "Failed to connect to the server. "
-                                    "Wrong user/password?"
-                                )
-                            except smtplib.SMTPException as e:
-                                logging.error(
-                                    f"SMTP error occurred: {str(e)}.")
-
-                        else:
-                            if self.verbose_logging:
-                                logging.info(
-                                    f"PowerOffDelay - sender not in"
-                                    f" list {match.group(0)}."
-                                )
-                            self.writeLog(
-                                False,
-                                f"PowerOffDelay - sender not in list "
-                                f"{match.group(0)}.\n"
-                            )
-
-                        if self.verbose_logging:
-                            logging.info(
-                                "PowerOffDelay - Marking message for delete.")
-                        self.writeLog(
-                            False, "PowerOffDelay - "
-                            "Marking message for delete.\n")
-
-                        if not self.dry_run:
-                            imap.store(str(i), "+FLAGS", "\\Deleted")
-
-                    else:
-                        if self.verbose_logging:
-                            logging.info(
-                                f"PowerOffDelay - Subject not recognized. "
-                                f"Skipping message. "
-                                f"{match.group(0)}"
-                            )
-
-                            self.writeLog(
-                                False,
-                                f"PowerOffDelay - Subject not recognized. "
-                                f"Skipping message. {match.group(0)}\n"
-                            )
-
-        # close the connection and logout
-        imap.expunge()
-        imap.close()
-        imap.logout()
+        mailbox.expunge()
+        mailbox.close()
+        mailbox.logout()
 
 
-if __name__ == '__main__':
-
-    poweroffdelay = POD()
-    poweroffdelay.run()
-    poweroffdelay = None
+if __name__ == "__main__":
+    PowerOffDelayByEmail().run()

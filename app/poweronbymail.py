@@ -1,462 +1,166 @@
-# Name: poweronbymail
-# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
-# date: 2023-01-04 20:08:00
-# update: 2023-12-28 12:47:00
-
-import imaplib
-import email
-import re
+"""Wake up nodes based on e-mail commands received via e-mail."""
 import logging
-import sys
-import configparser
-import shutil
+import re
 import smtplib
-import socket
-import json
-
-from datetime import datetime, timedelta, time
-from email.header import decode_header
-from wakeonlan import send_magic_packet
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# from email.mime.base import MIMEBase
-# from email import encoders
 from socket import gaierror
+
 from chump import Application
+from wakeonlan import send_magic_packet
+
+from common import ConfigError, ConfigOption, MailPowerService
 
 
-class POBE():
+class PowerOnByEmail(MailPowerService):
+    LOG_FILENAME = "poweronbymail.log"
 
-    def __init__(self):
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            level=logging.INFO)
-
-        config_dir = "/config/"
-        app_dir = "/app/"
-        log_dir = "/var/log/"
-
-        self.config_file = "poweron.ini"
-        self.exampleconfigfile = "poweron.ini.example"
-        self.log_file = "poweronbymail.log"
-        self.state_file = "poweron.json"
-
-        self.config_filePath = f"{config_dir}{self.config_file}"
-        self.state_filePath = f"{config_dir}{self.state_file}"
-        self.log_filePath = f"{log_dir}{self.log_file}"
-
+    def __init__(self) -> None:
+        super().__init__(self.LOG_FILENAME)
         try:
-            with open(self.config_filePath, "r") as f:
-                f.close()
-            try:
-                self.config = configparser.ConfigParser()
-                self.config.read(self.config_filePath)
+            self.nodename = self.require(ConfigOption("NODE", "NODE_NAME"))
+            self.macaddress = (
+                self.require(ConfigOption("NODE", "NODE_MAC")).replace(":", "-").lower()
+            )
+            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
+            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
 
-                # GENERAL
-                self.enabled = True if (
-                    self.config['GENERAL']['ENABLED'] == "ON") else False
-                self.dry_run = True if (
-                    self.config['GENERAL']['DRY_RUN'] == "ON") else False
-                self.verbose_logging = True if (
-                    self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
-                    else False
-
-                # NODE
-                self.nodename = self.config['NODE']['NODE_NAME']
-                self.macaddress = self.config['NODE']['NODE_MAC']\
-                    .replace(":", "-").lower()
-                self.nodeip = self.config['NODE']['NODE_IP']
-                self.nodeport = int(self.config['NODE']['NODE_PORT'])
-
-                # MAIL
-                self.mail_port = int(
-                    self.config['MAIL']['MAIL_PORT'])
-                self.mail_server = self.config['MAIL']['MAIL_SERVER']
-                self.mail_login = self.config['MAIL']['MAIL_LOGIN']
-                self.mail_password = self.config['MAIL']['MAIL_PASSWORD']
-                self.mail_sender = self.config['MAIL']['MAIL_SENDER']
-
-                # POWERON
-                self.keyword = self.config['POWERON']['KEYWORD']
-                self.allowed_senders = list(
-                    self.config['POWERON']['ALLOWED_SENDERS'].split(","))
-                self.allowed_credits = list(
-                    self.config['POWERON']['ALLOWED_CREDITS'].split(","))
-                self.credits = dict(
-                    zip(self.allowed_senders, self.allowed_credits)
-                    )
-
-                # PUSHOVER
-                self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
-                self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
-                self.pushover_sound = self.config['PUSHOVER']['SOUND']
-
-            except KeyError as e:
-                logging.error(
-                    f"Seems a key(s) {e} is missing from INI file. "
-                    f"Please check for mistakes. Exiting."
-                )
-
-                sys.exit()
-
-            except ValueError as e:
-                logging.error(
-                    f"Seems a invalid value in INI file. "
-                    f"Please check for mistakes. Exiting. "
-                    f"MSG: {e}"
-                )
-
-                sys.exit()
-
-            # Get state from jsonfile
-            try:
-
-                # check if it is midnight on monday.
-                # if so, reset the counters, by not reading the state.
-                # State will be written at the end of the script woth
-                # the default values.
-                now = datetime.now()
-                current_date_time = now.strftime("%Y-%m-%d %H:%M:%S")
-                if self.get_first_day_of_week() != current_date_time:
-                    with open(self.state_filePath, 'r') as json_file:
-                        self.credits = json.load(json_file)
-
-            except IOError or FileNotFoundError:
-                logging.info(
-                    f"Can't open file {self.state_filePath}"
-                    f", using default values from ini."
-                )
-
-        except IOError or FileNotFoundError:
-            logging.error(
-                f"Can't open file {self.config_filePath}"
-                f", creating example INI file."
+            self.keyword = self.require(ConfigOption("POWERON", "KEYWORD"))
+            self.allowed_senders = self.require_list(
+                ConfigOption("POWERON", "ALLOWED_SENDERS")
             )
 
-            shutil.copyfile(f'{app_dir}{self.exampleconfigfile}',
-                            f'{config_dir}{self.exampleconfigfile}')
-            sys.exit()
+            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
+            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
+            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+        except (ConfigError, ValueError) as error:
+            self.exit_with_config_error(ConfigError(str(error)))
 
-    def get_first_day_of_week(self):
-        today = datetime.today()
-        first_day = today - timedelta(days=today.weekday())
-        first_day_midnight = datetime.combine(
-            first_day, time.min)
-        return first_day_midnight
+    def _pushover(self):
+        return self.pushover_user(factory=Application)
 
-    def writeLog(self, init, msg):
+    @staticmethod
+    def _extract_sender(message) -> str:
+        header = message.get("From", "")
+        decoded = MailPowerService.decode_header_value(header) if header else ""
+        match = re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", decoded)
+        return match.group(0) if match else ""
+
+
+    def _send_mail_response(self, receiver: str, body: str) -> None:
+        message = MIMEMultipart()
+        message["From"] = self.mail_sender
+        message["To"] = receiver
+        message["Subject"] = f"PowerOn - {self.nodename}"
+        message.attach(MIMEText(body, _subtype="plain", _charset="UTF-8"))
+
         try:
-            if init:
-                logfile = open(self.log_filePath, "w")
-            else:
-                logfile = open(self.log_filePath, "a")
-            logfile.write(f"{datetime.now()} - {msg}")
-            logfile.close()
-        except IOError:
-            logging.error(
-                f"Can't write file {self.log_filePath}."
+            session = smtplib.SMTP(self.mail_server, self.mail_port)
+            session.starttls()
+            session.login(self.mail_login, self.mail_password)
+            session.sendmail(self.mail_sender, [receiver], message.as_string())
+            session.quit()
+        except (gaierror, ConnectionRefusedError):
+            logging.error("Failed to connect to the server. Bad connection settings?")
+        except smtplib.SMTPServerDisconnected:
+            logging.error("Failed to connect to the server. Wrong user/password?")
+        except smtplib.SMTPException as exc:
+            logging.error("SMTP error occurred: %s.", exc)
+        else:
+            self.verbose(f"PowerOn - Mail Sent to {receiver}.")
+            self.write_log(f"PowerOn - Mail Sent to {receiver}.\n")
+
+    def _handle_wol(self, sender: str, user) -> str:
+        node_running = self.is_port_open(self.nodeip, self.nodeport)
+        if node_running:
+            logging.info("PowerOn - Nodes already running by %s", sender)
+            self.write_log(
+                f"PowerOn - Nodes already running by {sender}\n"
+            )
+            return (
+                f"Hi,\n\n {self.nodename} is al aan, Je hoeft het 'power on' commando"
+                " niet meer te sturen.\n\nFijne dag!\n\n"
             )
 
-    def run(self):
-        # Setting for PushOver
-        self.appPushover = Application(self.pushover_token_api)
-        self.userPushover = self.appPushover.get_user(self.pushover_user_key)
+        if not self.dry_run:
+            try:
+                send_magic_packet(self.macaddress)
+            except ValueError:
+                logging.error("Invalid MAC-address in INI.")
+        logging.info("PowerOn - Sending WOL command by %s", sender)
+        self.write_log(
+            f"PowerOn - Sending WOL command by {sender}\n"
+        )
+        user.send_message(
+            message=f"PowerOnByEmail - WOL command sent by {sender}",
+            sound=self.pushover_sound,
+        )
+
+        body = (
+            f"Hi,\n\n {self.nodename} wordt aangezet, even geduld.\n\n"
+        )
+        body += "Fijne dag!\n\n"
+        return body
+
+    def run(self) -> None:
+        user = self._pushover()
 
         if self.dry_run:
-            logging.info(
-                "*****************************************")
-            logging.info(
-                "**** DRY RUN, NOTHING WILL SET AWAKE ****")
-            logging.info(
-                "*****************************************")
+            logging.info("*****************************************")
+            logging.info("**** DRY RUN, NOTHING WILL SET AWAKE ****")
+            logging.info("*****************************************")
+            self.write_log("PowerOn - Dry run.\n")
 
-            self.writeLog(
-                False,
-                "PowerOn - Dry run.\n"
+        mailbox = self.connect_mailbox()
+
+        for uid, message in self.iter_messages(mailbox):
+            subject = message.get("Subject", "")
+            subject_text = (
+                MailPowerService.decode_header_value(subject) if subject else ""
+            )
+            sender = self._extract_sender(message)
+
+            if subject_text.lower() != self.keyword.lower():
+                self.verbose(
+                    f"PowerOn - Subject not recognized. Skipping message. {sender}"
+                )
+                self.write_log(
+                    f"PowerOn - Subject not recognized. Skipping message. {sender}\n"
+                )
+                continue
+
+            self.verbose(f"PowerOn - Found matching subject from {sender}")
+            self.write_log(
+                f"PowerOn - Found matching subject from {sender}\n"
             )
 
-        # create an IMAP4 class with SSL
-        imap = imaplib.IMAP4_SSL(self.mail_server)
-        # authenticate
-        imap.login(self.mail_login, self.mail_password)
+            if sender not in self.allowed_senders:
+                self.verbose(f"PowerOn - sender not in list {sender}.")
+                self.write_log(
+                    f"PowerOn - sender not in list {sender}.\n"
+                )
+                continue
 
-        status, messages = imap.select("INBOX")
+            if not self.enabled:
+                self.verbose(f"PowerOn - Service is disabled by {sender}")
+                self.write_log(
+                    f"PowerOn - Service is disabled by {sender}\n"
+                )
+                body = (
+                    f"Hi,\n\nDe service voor {self.nodename} staat uit, je hoeft even geen commando's te sturen.\n\nFijne dag!\n\n"
+                )
+            else:
+                body = self._handle_wol(sender, user)
 
-        # total number of emails
-        messages = int(messages[0])
+            self._send_mail_response(sender, body)
 
-        for i in range(1, messages+1):
+            if not self.dry_run:
+                mailbox.store(uid, "+FLAGS", "\\Deleted")
 
-            # fetch the email message by ID
-            res, msg = imap.fetch(str(i), "(RFC822)")
-            for response in msg:
-                if isinstance(response, tuple):
-                    # parse a bytes email into a message object
-                    msg = email.message_from_bytes(response[1])
-
-                    # decode the email subject
-                    subject, encoding = decode_header(msg["Subject"])[0]
-
-                    if isinstance(subject, bytes):
-                        # if it's a bytes, decode to str
-                        if encoding:
-                            subject = subject.decode(encoding)
-                        else:
-                            subject = subject.decode("utf-8")
-
-                    # decode email sender
-                    From, encoding = decode_header(msg.get("From"))[-1:][0]
-
-                    if isinstance(From, bytes):
-                        if encoding:
-                            From = From.decode(encoding)
-                        else:
-                            From = From.decode("utf-8")
-
-                    match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', From)
-
-                    if str.lower(subject) == self.keyword.lower():
-
-                        if self.verbose_logging:
-                            logging.info(
-                                f"PowerOn - Found matching subject from "
-                                f"{match.group(0)}"
-                            )
-                        self.writeLog(
-                            False, f"PowerOn - Found matching subject from "
-                            f"{match.group(0)}\n")
-
-                        if match.group(0) in self.allowed_senders:
-
-                            if self.enabled:
-                                sock = socket.socket(
-                                    socket.AF_INET, socket.SOCK_STREAM)
-                                result = sock.connect_ex(
-                                    (self.nodeip, self.nodeport))
-
-                                if result != 0:
-                                    if not self.dry_run:
-                                        try:
-                                            if self.credits.get(
-                                                    match.group(0), 0) != 0:
-                                                send_magic_packet(
-                                                    self.macaddress)
-
-                                        except ValueError:
-                                            logging.error(
-                                                "Invalid MAC-address in INI."
-                                            )
-                                            sys.exit()
-
-                                    logging.info(
-                                        f"PowerOn - Sending WOL command by"
-                                        f" {match.group(0)}"
-                                        )
-                                    self.writeLog(
-                                        False,
-                                        f"PowerOn - Sending WOL command by"
-                                        f" {match.group(0)}\n"
-                                    )
-
-                                    self.message = \
-                                        self.userPushover.send_message(
-                                            message=f"PowerOnByEmail - "
-                                            f"WOL command sent by "
-                                            f"{match.group(0)}\n",
-                                            sound=self.pushover_sound
-                                            )
-
-                                else:
-                                    logging.info(
-                                        f"PowerOn - Nodes already running"
-                                        f" by {match.group(0)}"
-                                    )
-                                    self.writeLog(
-                                        False,
-                                        f"PowerOn - Nodes already running by "
-                                        f"{match.group(0)}\n"
-                                    )
-                            else:
-                                if self.verbose_logging:
-                                    logging.info(
-                                        f"PowerOn - Service is disabled by "
-                                        f"{match.group(0)}"
-                                    )
-                                self.writeLog(
-                                    False,
-                                    f"PowerOn - Service is disabled by "
-                                    f"{match.group(0)}\n"
-                                )
-
-                            sender_email = self.mail_sender
-                            receiver_email = match.group(0)
-
-                            message = MIMEMultipart()
-                            message["From"] = sender_email
-                            message['To'] = receiver_email
-                            message['Subject'] = (
-                                f"PowerOn - {self.nodename}"
-                            )
-
-                            # attachment = open(self.log_filePath, 'rb')
-                            # obj = MIMEBase('application', 'octet-stream')
-                            # obj.set_payload((attachment).read())
-                            # encoders.encode_base64(obj)
-                            # obj.add_header(
-                            #     'Content-Disposition',
-                            #     "attachment; filename= "+self.log_file
-                            # )
-                            # message.attach(obj)
-
-                            if self.enabled:
-                                if result != 0:
-
-                                    # Get the credits for the is user
-                                    # Check is it's not ZERO
-                                    # (so users with credits ">0" or "-1")
-                                    credit = int(self.credits[match.group(0)])
-                                    if credit != 0:
-                                        # If credits greater than 0 do a "-1"
-                                        if credit > 0:
-                                            credit -= 1
-                                            self.credits[match.group(0)] = \
-                                                str(credit)
-
-                                        body = (
-                                            f"Hi,\n\n {self.nodename} "
-                                            f"wordt aangezet, "
-                                            f"even geduld.\n\n")
-
-                                        if credit > -1:
-                                            body += (
-                                                f"Er kan nog {credit} keer een"
-                                                f" verzoek gedaan worden deze"
-                                                f" week om {self.nodename} aan"
-                                                f" te zetten.\n\n")
-
-                                        body += "Fijne dag!\n\n"
-                                    else:
-                                        body = (
-                                            f"Hi,\n\n {self.nodename} "
-                                            f"wordt niet aangezet, "
-                                            f"je credits zijn op voor "
-                                            f"deze week.\n\nFijne dag!\n\n"
-                                        )
-                                else:
-                                    body = (
-                                        f"Hi,\n\n {self.nodename} is al aan, "
-                                        f"Je hoeft het 'power on' "
-                                        f"commando niet meer te sturen.\n\n"
-                                        f"Fijne dag!\n\n"
-                                    )
-                            else:
-                                body = (
-                                    f"Hi,\n\nDe service voor {self.nodename} "
-                                    f"staat uit, je hoeft even geen "
-                                    f"commando's te sturen.\n\n"
-                                    f"Fijne dag!\n\n"
-                                )
-
-                            # logfile = open(self.log_filePath, "r")
-                            # body += ''.join(logfile.readlines())
-                            # logfile.close()
-
-                            plain_text = MIMEText(
-                                body, _subtype='plain', _charset='UTF-8')
-                            message.attach(plain_text)
-
-                            my_message = message.as_string()
-
-                            try:
-                                email_session = smtplib.SMTP(
-                                    self.mail_server, self.mail_port)
-                                email_session.starttls()
-                                email_session.login(
-                                    self.mail_login, self.mail_password)
-                                email_session.sendmail(
-                                    sender_email,
-                                    [receiver_email],
-                                    my_message
-                                    )
-                                email_session.quit()
-                                if self.verbose_logging:
-                                    logging.info(
-                                        f"PowerOn - Mail Sent to "
-                                        f"{receiver_email}."
-                                    )
-
-                                self.writeLog(
-                                    False,
-                                    f"PowerOn - Mail Sent to "
-                                    f"{receiver_email}.\n"
-                                )
-
-                            except (gaierror, ConnectionRefusedError):
-                                logging.error(
-                                    "Failed to connect to the server. "
-                                    "Bad connection settings?")
-                            except smtplib.SMTPServerDisconnected:
-                                logging.error(
-                                    "Failed to connect to the server. "
-                                    "Wrong user/password?"
-                                )
-                            except smtplib.SMTPException as e:
-                                logging.error(
-                                    f"SMTP error occurred: {str(e)}.")
-
-                        else:
-                            if self.verbose_logging:
-                                logging.info(
-                                    f"PowerOn - sender not in"
-                                    f" list {match.group(0)}."
-                                    )
-                            self.writeLog(
-                                False,
-                                f"PowerOn - sender not in list "
-                                f"{match.group(0)}.\n"
-                            )
-
-                        if self.verbose_logging:
-                            logging.info(
-                                "PowerOn - Marking message for delete.")
-                        self.writeLog(
-                            False, "PowerOn - Marking message for delete.\n")
-
-                        if not self.dry_run:
-                            imap.store(str(i), "+FLAGS", "\\Deleted")
-
-                    else:
-                        if self.verbose_logging:
-                            logging.info(
-                                f"PowerOn - Subject not recognized. "
-                                f"Skipping message. "
-                                f"{match.group(0)}"
-                            )
-
-                            self.writeLog(
-                                False,
-                                f"PowerOn - Subject not recognized. "
-                                f"Skipping message. {match.group(0)}\n"
-                            )
-
-        # close the connection and logout
-        imap.expunge()
-        imap.close()
-        imap.logout()
-
-        # Save state to jsonfile
-        try:
-            with open(self.state_filePath, 'w') as json_file:
-                json.dump(self.credits, json_file)
-
-        except IOError or FileNotFoundError:
-            logging.error(
-                f"Can't save file {self.state_filePath}."
-            )
+        mailbox.expunge()
+        mailbox.close()
+        mailbox.logout()
 
 
-if __name__ == '__main__':
-
-    poweronbyemail = POBE()
-    poweronbyemail.run()
-    poweronbyemail = None
+if __name__ == "__main__":
+    PowerOnByEmail().run()
