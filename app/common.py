@@ -56,8 +56,12 @@ class BasePowerService:
         self.config = self._load_config()
 
         try:
-            self.enabled = self.require_bool(ConfigOption("GENERAL", "ENABLED"))
-            self.dry_run = self.require_bool(ConfigOption("GENERAL", "DRY_RUN"))
+            self.enabled = self.require_bool(
+                ConfigOption("GENERAL", "ENABLED")
+            )
+            self.dry_run = self.require_bool(
+                ConfigOption("GENERAL", "DRY_RUN")
+            )
             self.verbose_logging = self.require_bool(
                 ConfigOption("GENERAL", "VERBOSE_LOGGING")
             )
@@ -74,7 +78,10 @@ class BasePowerService:
                 self.config_path,
             )
             try:
-                shutil.copyfile(self.example_path, CONFIG_DIR / self.example_filename)
+                shutil.copyfile(
+                    self.example_path,
+                    CONFIG_DIR / self.example_filename,
+                )
             except OSError as exc:
                 logging.error("Failed to copy example configuration: %s", exc)
             sys.exit()
@@ -84,7 +91,11 @@ class BasePowerService:
         try:
             parser.read(self.config_path)
         except (configparser.Error, UnicodeDecodeError) as exc:
-            logging.error("Unable to parse configuration file %s: %s", self.config_path, exc)
+            logging.error(
+                "Unable to parse configuration file %s: %s",
+                self.config_path,
+                exc,
+            )
             sys.exit()
         return parser
 
@@ -92,7 +103,12 @@ class BasePowerService:
         logging.error("%s Please check for mistakes. Exiting.", error)
         sys.exit()
 
-    def require(self, option: ConfigOption, *, allow_empty: bool = False) -> str:
+    def require(
+        self,
+        option: ConfigOption,
+        *,
+        allow_empty: bool = False,
+    ) -> str:
         try:
             value = self.config[option.section][option.key]
         except KeyError as exc:
@@ -150,7 +166,9 @@ class BasePowerService:
     def pushover_user(self, *, factory: Callable[[str], object]) -> object:
         if self._pushover_user is None:
             self._pushover_app = factory(self.pushover_token_api)
-            self._pushover_user = self._pushover_app.get_user(self.pushover_user_key)
+            self._pushover_user = self._pushover_app.get_user(
+                self.pushover_user_key
+            )
         return self._pushover_user
 
 
@@ -160,11 +178,21 @@ class MailPowerService(BasePowerService):
     def __init__(self, log_filename: str) -> None:
         super().__init__(log_filename)
         try:
-            self.mail_port = self.require_int(ConfigOption("MAIL", "MAIL_PORT"))
-            self.mail_server = self.require(ConfigOption("MAIL", "MAIL_SERVER"))
-            self.mail_login = self.require(ConfigOption("MAIL", "MAIL_LOGIN"))
-            self.mail_password = self.require(ConfigOption("MAIL", "MAIL_PASSWORD"))
-            self.mail_sender = self.require(ConfigOption("MAIL", "MAIL_SENDER"))
+            self.mail_port = self.require_int(
+                ConfigOption("MAIL", "MAIL_PORT")
+            )
+            self.mail_server = self.require(
+                ConfigOption("MAIL", "MAIL_SERVER")
+            )
+            self.mail_login = self.require(
+                ConfigOption("MAIL", "MAIL_LOGIN")
+            )
+            self.mail_password = self.require(
+                ConfigOption("MAIL", "MAIL_PASSWORD")
+            )
+            self.mail_sender = self.require(
+                ConfigOption("MAIL", "MAIL_SENDER")
+            )
         except ConfigError as error:
             self.exit_with_config_error(error)
 
@@ -174,7 +202,9 @@ class MailPowerService(BasePowerService):
         return mailbox
 
     @staticmethod
-    def iter_messages(mailbox: imaplib.IMAP4_SSL) -> Generator[Tuple[str, Message], None, None]:
+    def iter_messages(
+        mailbox: imaplib.IMAP4_SSL,
+    ) -> Generator[Tuple[str, Message], None, None]:
         status, messages = mailbox.select("INBOX")
         if status != "OK":
             return

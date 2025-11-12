@@ -18,21 +18,35 @@ class PowerOnByEmail(MailPowerService):
     def __init__(self) -> None:
         super().__init__(self.LOG_FILENAME)
         try:
-            self.nodename = self.require(ConfigOption("NODE", "NODE_NAME"))
-            self.macaddress = (
-                self.require(ConfigOption("NODE", "NODE_MAC")).replace(":", "-").lower()
+            self.nodename = self.require(
+                ConfigOption("NODE", "NODE_NAME")
             )
-            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
-            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
+            self.macaddress = self.require(
+                ConfigOption("NODE", "NODE_MAC")
+            ).replace(":", "-").lower()
+            self.nodeip = self.require(
+                ConfigOption("NODE", "NODE_IP")
+            )
+            self.nodeport = self.require_int(
+                ConfigOption("NODE", "NODE_PORT")
+            )
 
-            self.keyword = self.require(ConfigOption("POWERON", "KEYWORD"))
+            self.keyword = self.require(
+                ConfigOption("POWERON", "KEYWORD")
+            )
             self.allowed_senders = self.require_list(
                 ConfigOption("POWERON", "ALLOWED_SENDERS")
             )
 
-            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
-            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
-            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+            self.pushover_user_key = self.require(
+                ConfigOption("PUSHOVER", "USER_KEY")
+            )
+            self.pushover_token_api = self.require(
+                ConfigOption("PUSHOVER", "TOKEN_API")
+            )
+            self.pushover_sound = self.require(
+                ConfigOption("PUSHOVER", "SOUND")
+            )
         except (ConfigError, ValueError) as error:
             self.exit_with_config_error(ConfigError(str(error)))
 
@@ -42,7 +56,9 @@ class PowerOnByEmail(MailPowerService):
     @staticmethod
     def _extract_sender(message) -> str:
         header = message.get("From", "")
-        decoded = MailPowerService.decode_header_value(header) if header else ""
+        decoded = (
+            MailPowerService.decode_header_value(header) if header else ""
+        )
         match = re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", decoded)
         return match.group(0) if match else ""
 
@@ -61,9 +77,13 @@ class PowerOnByEmail(MailPowerService):
             session.sendmail(self.mail_sender, [receiver], message.as_string())
             session.quit()
         except (gaierror, ConnectionRefusedError):
-            logging.error("Failed to connect to the server. Bad connection settings?")
+            logging.error(
+                "Failed to connect to the server. Bad connection settings?"
+            )
         except smtplib.SMTPServerDisconnected:
-            logging.error("Failed to connect to the server. Wrong user/password?")
+            logging.error(
+                "Failed to connect to the server. Wrong user/password?"
+            )
         except smtplib.SMTPException as exc:
             logging.error("SMTP error occurred: %s.", exc)
         else:
@@ -78,7 +98,8 @@ class PowerOnByEmail(MailPowerService):
                 f"PowerOn - Nodes already running by {sender}\n"
             )
             return (
-                f"Hi,\n\n {self.nodename} is al aan, Je hoeft het 'power on' commando"
+                "Hi,\n\n"
+                f" {self.nodename} is al aan, Je hoeft het 'power on' commando"
                 " niet meer te sturen.\n\nFijne dag!\n\n"
             )
 
@@ -116,16 +137,20 @@ class PowerOnByEmail(MailPowerService):
         for uid, message in self.iter_messages(mailbox):
             subject = message.get("Subject", "")
             subject_text = (
-                MailPowerService.decode_header_value(subject) if subject else ""
+                MailPowerService.decode_header_value(subject)
+                if subject
+                else ""
             )
             sender = self._extract_sender(message)
 
             if subject_text.lower() != self.keyword.lower():
                 self.verbose(
-                    f"PowerOn - Subject not recognized. Skipping message. {sender}"
+                    "PowerOn - Subject not recognized. "
+                    f"Skipping message. {sender}"
                 )
                 self.write_log(
-                    f"PowerOn - Subject not recognized. Skipping message. {sender}\n"
+                    "PowerOn - Subject not recognized. "
+                    f"Skipping message. {sender}\n"
                 )
                 continue
 
@@ -147,7 +172,10 @@ class PowerOnByEmail(MailPowerService):
                     f"PowerOn - Service is disabled by {sender}\n"
                 )
                 body = (
-                    f"Hi,\n\nDe service voor {self.nodename} staat uit, je hoeft even geen commando's te sturen.\n\nFijne dag!\n\n"
+                    "Hi,\n\n"
+                    f"De service voor {self.nodename} staat uit, "
+                    "je hoeft even geen commando's te sturen.\n\n"
+                    "Fijne dag!\n\n"
                 )
             else:
                 body = self._handle_wol(sender, user)

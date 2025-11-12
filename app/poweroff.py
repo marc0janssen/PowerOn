@@ -15,18 +15,32 @@ class PowerOff(BasePowerService):
     def __init__(self) -> None:
         super().__init__(self.LOG_FILENAME)
         try:
-            self.nodename = self.require(ConfigOption("NODE", "NODE_NAME"))
-            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
-            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
-            self.nodesshport = self.require_int(ConfigOption("NODE", "NODE_SSHPORT"))
-            self.nodeuser = self.require(ConfigOption("NODE", "NODE_USER"))
-            self.nodepwd = self.require(ConfigOption("NODE", "NODE_PWD"))
+            self.nodename = self.require(
+                ConfigOption("NODE", "NODE_NAME")
+            )
+            self.nodeip = self.require(
+                ConfigOption("NODE", "NODE_IP")
+            )
+            self.nodeport = self.require_int(
+                ConfigOption("NODE", "NODE_PORT")
+            )
+            self.nodesshport = self.require_int(
+                ConfigOption("NODE", "NODE_SSHPORT")
+            )
+            self.nodeuser = self.require(
+                ConfigOption("NODE", "NODE_USER")
+            )
+            self.nodepwd = self.require(
+                ConfigOption("NODE", "NODE_PWD")
+            )
 
             self.poweroffcommand = self.require(
                 ConfigOption("POWEROFF", "POWEROFFCOMMAND")
             )
 
-            self.defaulthour = self.require(ConfigOption("EXTENDTIME", "DEFAULT_HOUR"))
+            self.defaulthour = self.require(
+                ConfigOption("EXTENDTIME", "DEFAULT_HOUR")
+            )
             self.defaultminutes = self.require(
                 ConfigOption("EXTENDTIME", "DEFAULT_MINUTES")
             )
@@ -34,9 +48,15 @@ class PowerOff(BasePowerService):
                 ConfigOption("EXTENDTIME", "MAX_SHUTDOWN_HOUR_TIME")
             )
 
-            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
-            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
-            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+            self.pushover_user_key = self.require(
+                ConfigOption("PUSHOVER", "USER_KEY")
+            )
+            self.pushover_token_api = self.require(
+                ConfigOption("PUSHOVER", "TOKEN_API")
+            )
+            self.pushover_sound = self.require(
+                ConfigOption("PUSHOVER", "SOUND")
+            )
         except ConfigError as error:
             self.exit_with_config_error(error)
 
@@ -51,7 +71,11 @@ class PowerOff(BasePowerService):
             logging.error("File not found - %s.", self.CRONTAB_FILE)
             return
         except OSError as exc:
-            logging.error("Error reading the file %s: %s", self.CRONTAB_FILE, exc)
+            logging.error(
+                "Error reading the file %s: %s",
+                self.CRONTAB_FILE,
+                exc,
+            )
             return
 
         lines = content.split("\n")
@@ -68,7 +92,11 @@ class PowerOff(BasePowerService):
             with open(self.CRONTAB_FILE, "w", encoding="utf-8") as file:
                 file.write(new_text)
         except OSError as exc:
-            logging.error("Error writing the file %s: %s", self.CRONTAB_FILE, exc)
+            logging.error(
+                "Error writing the file %s: %s",
+                self.CRONTAB_FILE,
+                exc,
+            )
 
     def run(self) -> None:
         user = self._pushover()
