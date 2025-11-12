@@ -792,6 +792,7 @@ class PowerManager:
                 continue
 
             remaining = int(credits.get(sender, "0"))
+            self.logger.info("credits voor %s: %d", sender, remaining)
             if remaining <= 0:
                 self.logger.info(
                     "PowerOn - No remaining credits for %s", sender
