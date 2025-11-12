@@ -86,7 +86,8 @@ class PowerOffByEmail(MailPowerService):
             "ssh",
             "-p",
             str(self.nodesshport),
-            "-tt",
+            "-t",
+            "-q",
             f"{self.nodeuser}@{self.nodeip}",
             f"echo {escaped_pwd}|sudo -S bash -c '{self.poweroffcommand}'",
         ]
