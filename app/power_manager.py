@@ -1066,4 +1066,4 @@ class PowerManager:
         today = datetime.today()
         first_day = today - timedelta(days=today.weekday())
         return datetime.combine(first_day, time.min)
-
+    
