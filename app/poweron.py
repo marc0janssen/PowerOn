@@ -29,8 +29,6 @@ class PowerOn(BasePowerService):
         return self.pushover_user(factory=Application)
 
     def run(self) -> None:
-        user = self._pushover()
-
         if self.dry_run:
             logging.info("*****************************************")
             logging.info("**** DRY RUN, NOTHING WILL SET AWAKE ****")
@@ -40,23 +38,26 @@ class PowerOn(BasePowerService):
         if not self.enabled:
             return
 
-        if not self.is_port_open(self.nodeip, self.nodeport):
-            if not self.dry_run:
-                try:
-                    send_magic_packet(self.macaddress)
-                except ValueError:
-                    logging.error("Invalid MAC-address in INI.")
-                    return
-
-                logging.info("PowerOn - Sending WOL command by cron")
-                self.write_log("PowerOn - Sending WOL command by cron\n")
-                user.send_message(
-                    message="PowerOn - WOL command sent by cron",
-                    sound=self.pushover_sound,
-                )
-        else:
+        if self.is_port_open(self.nodeip, self.nodeport):
             logging.info("PowerOn - Nodes already running by cron")
             self.write_log("PowerOn - Nodes already running by cron\n")
+            return
+
+        if self.dry_run:
+            return
+
+        try:
+            send_magic_packet(self.macaddress)
+        except ValueError:
+            logging.error("Invalid MAC-address in INI.")
+            return
+
+        logging.info("PowerOn - Sending WOL command by cron")
+        self.write_log("PowerOn - Sending WOL command by cron\n")
+        self._pushover().send_message(
+            message="PowerOn - WOL command sent by cron",
+            sound=self.pushover_sound,
+        )
 
 
 if __name__ == "__main__":
