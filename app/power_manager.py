@@ -770,7 +770,7 @@ class PowerManager:
 
         log_name = "poweronbymail.log"
 
-        credits = self._load_credits()
+        # credits = self._load_credits()
 
         if self.general.dry_run:
             self.logger.info("**** DRY RUN, NOTHING WILL SET AWAKE ****")
@@ -791,13 +791,12 @@ class PowerManager:
                 self.logger.info("sender niet toegestaan: %s", sender)
                 continue
 
-            remaining = int(credits.get(sender, "0"))
-            self.logger.info("credits voor %s: %d", sender, remaining)
-            if remaining <= 0:
-                self.logger.info(
-                    "PowerOn - No remaining credits for %s", sender
-                )
-                continue
+            # remaining = int(credits.get(sender, "0"))
+            # if remaining <= 0:
+            #     self.logger.info(
+            #         "PowerOn - No remaining credits for %s", sender
+            #     )
+            #     continue
 
             if self.general.verbose_logging:
                 self.logger.info(
@@ -809,9 +808,9 @@ class PowerManager:
                 f"PowerOn - Found matching subject from {sender}\n",
             )
 
-            if self._handle_power_on_request(sender, log_name):
-                credits[sender] = str(remaining - 1)
-                self._save_credits(credits)
+            # if self._handle_power_on_request(sender, log_name):
+            #    credits[sender] = str(remaining - 1)
+            #    self._save_credits(credits)
 
     def _handle_power_on_request(self, sender: str, log_name: str) -> bool:
         if not self.general.enabled:
