@@ -1,215 +1,96 @@
-# Name: poweroff_extra_nodes
-# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
-# date: 2023-12-29 14:07:00
-# update: 2023-12-29 14:07:00
-
+"""Shutdown helper for additional nodes."""
 import logging
-import sys
-import configparser
-import shutil
-import socket
+import re
 import subprocess
 
-from datetime import datetime
 from chump import Application
 
+from common import BasePowerService, ConfigError, ConfigOption
 
-class EXTRA_NODES():
 
-    def __init__(self):
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            level=logging.INFO)
+class ExtraNodesPowerOff(BasePowerService):
+    LOG_FILENAME = "extranodes.log"
 
-        config_dir = "/config/"
-        app_dir = "/app/"
-        log_dir = "/var/log/"
-
-        self.config_file = "poweron.ini"
-        self.exampleconfigfile = "poweron.ini.example"
-        self.log_file = "extranodes.log"
-
-        self.config_filePath = f"{config_dir}{self.config_file}"
-        self.log_filePath = f"{log_dir}{self.log_file}"
-
+    def __init__(self) -> None:
+        super().__init__(self.LOG_FILENAME)
         try:
-            with open(self.config_filePath, "r") as f:
-                f.close()
-            try:
-                self.config = configparser.ConfigParser()
-                self.config.read(self.config_filePath)
+            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
+            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
 
-                # GENERAL
-                self.enabled = True if (
-                    self.config['GENERAL']['ENABLED'] == "ON") else False
-                self.dry_run = True if (
-                    self.config['GENERAL']['DRY_RUN'] == "ON") else False
-                self.verbose_logging = True if (
-                    self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
-                    else False
-
-                # NODE
-                self.nodeip = self.config['NODE']['NODE_IP']
-                self.nodeport = int(self.config['NODE']['NODE_PORT'])
-
-                # EXTRANODES
-                self.nodename = list(
-                    self.config['EXTRANODES']
-                    ['NODE_NAME'].split(","))
-                self.nodepwd = list(
-                    self.config['EXTRANODES']
-                    ['NODE_PWD'].split(","))
-                self.nodeuser = list(
-                    self.config['EXTRANODES']
-                    ['NODE_USER'].split(","))
-                self.extranodeip = list(
-                    self.config['EXTRANODES']
-                    ['NODE_IP'].split(","))
-                self.extranodesshport = list(
-                    self.config['EXTRANODES']
-                    ['NODE_SSHPORT'].split(","))
-                self.nodemacaddress = list(
-                    self.config['EXTRANODES']
-                    ['NODE_MAC_ADDRESS'].split(","))
-                self.poweroffcommand = \
-                    self.config['EXTRANODES']['POWEROFFCOMMAND']
-
-                # PUSHOVER
-                self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
-                self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
-                self.pushover_sound = self.config['PUSHOVER']['SOUND']
-
-            except KeyError as e:
-                logging.error(
-                    f"Seems a key(s) {e} is missing from INI file. "
-                    f"Please check for mistakes. Exiting."
+            self.nodenames = self.require_list(ConfigOption("EXTRANODES", "NODE_NAME"))
+            self.node_ips = self.require_list(ConfigOption("EXTRANODES", "NODE_IP"))
+            self.node_users = self.require_list(ConfigOption("EXTRANODES", "NODE_USER"))
+            self.node_pwds = self.require_list(ConfigOption("EXTRANODES", "NODE_PWD"))
+            self.node_ports = [
+                int(port) for port in self.require_list(
+                    ConfigOption("EXTRANODES", "NODE_SSHPORT")
                 )
-
-                sys.exit()
-
-            except ValueError as e:
-                logging.error(
-                    f"Seems a invalid value in INI file. "
-                    f"Please check for mistakes. Exiting. "
-                    f"MSG: {e}"
-                )
-
-                sys.exit()
-
-        except IOError or FileNotFoundError:
-            logging.error(
-                f"Can't open file {self.config_filePath}"
-                f", creating example INI file."
+            ]
+            self.poweroffcommand = self.require(
+                ConfigOption("EXTRANODES", "POWEROFFCOMMAND")
             )
 
-            shutil.copyfile(f'{app_dir}{self.exampleconfigfile}',
-                            f'{config_dir}{self.exampleconfigfile}')
-            sys.exit()
+            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
+            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
+            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+        except (ConfigError, ValueError) as error:
+            self.exit_with_config_error(ConfigError(str(error)))
 
-    def writeLog(self, init, msg):
-        try:
-            if init:
-                logfile = open(self.log_filePath, "w")
-            else:
-                logfile = open(self.log_filePath, "a")
-            logfile.write(f"{datetime.now()} - {msg}")
-            logfile.close()
-        except IOError:
-            logging.error(
-                f"Can't write file {self.log_filePath}."
-            )
+    def _pushover(self):
+        return self.pushover_user(factory=Application)
 
-    def is_active_ip(self, ip_address):
-        command = ['ping', '-c', '1', ip_address]
-        try:
-            _ = subprocess.check_output(command)
-            return True
-        except subprocess.CalledProcessError:
-            return False
+    @staticmethod
+    def _build_command(user: str, host: str, port: int, password: str, command: str) -> list[str]:
+        escaped_pwd = re.escape(password)
+        return [
+            "sshpass",
+            "-p",
+            password,
+            "ssh",
+            "-p",
+            str(port),
+            "-t",
+            f"{user}@{host}",
+            f"echo {escaped_pwd}|sudo -S bash -c '{command}'",
+        ]
 
-    def run(self):
-        # Setting for PushOver
-        self.appPushover = Application(self.pushover_token_api)
-        self.userPushover = self.appPushover.get_user(self.pushover_user_key)
+    def run(self) -> None:
+        user = self._pushover()
 
         if self.dry_run:
-            logging.info(
-                "********************************************")
-            logging.info(
-                "**** DRY RUN, NOTHING WILL SET TO SLEEP ****")
-            logging.info(
-                "********************************************")
+            logging.info("********************************************")
+            logging.info("**** DRY RUN, NOTHING WILL SET TO SLEEP ****")
+            logging.info("********************************************")
+            self.write_log("PowerOff - Dry run.\n")
 
-            self.writeLog(
-                False,
-                "PowerOff - Dry run.\n"
-            )
+        if not self.enabled:
+            return
 
-        if self.enabled:
-            sock = socket.socket(
-                socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(
-                (self.nodeip, self.nodeport))
-            # Port is open of the master node
+        if self.is_port_open(self.nodeip, self.nodeport):
+            logging.info("PowerOff Extra Nodes - Primary node online, skipping shutdown.")
+            return
 
-            if result != 0:
-                if not self.dry_run:
+        if self.dry_run:
+            return
 
-                    numofnodes = len(self.nodename)
+        for name, host, port, pwd, user_name in zip(
+            self.nodenames, self.node_ips, self.node_ports, self.node_pwds, self.node_users
+        ):
+            if not self.is_port_open(host, port):
+                continue
 
-                    for node in range(numofnodes):
-                        try:
+            command = self._build_command(user_name, host, port, pwd, self.poweroffcommand)
+            result = subprocess.run(command, capture_output=True, text=True)
+            if result.stdout:
+                logging.info(result.stdout.strip())
+            if result.stderr:
+                logging.error(result.stderr.strip())
 
-                            # is MAC is not active then send magic packet
-                            if self.is_active_ip(self.extranodeip[node]):
-
-                                # Execute the shell command
-
-                                resultProces = subprocess.run(
-                                    ["sshpass",
-                                        "-p",
-                                        f"{self.nodepwd[node]}",
-                                        "ssh",
-                                        "-p",
-                                        f"{self.extranodesshport[node]}",
-                                        "-t",
-                                        f"{self.nodeuser[node]}"
-                                        f"@{self.extranodeip[node]}",
-                                        f"echo {self.nodepwd[node]}"
-                                        f"|sudo -S bash -c "
-                                        f"{self.poweroffcommand}"],
-                                    capture_output=True, text=True)
-
-                                # Print the command output
-                                logging.info(resultProces.stdout)
-
-                                self.message = \
-                                    self.userPushover.send_message(
-                                        message=f"PowerOff Extra Nodes - "
-                                        f"SLEEP command sent for "
-                                        f"{self.nodename[node]}\n",
-                                        sound=self.pushover_sound
-                                        )
-
-                                logging.info(
-                                    f"PowerOff - Sending SLEEP command for"
-                                    f" {self.nodename[node]}"
-                                    )
-
-                                self.writeLog(
-                                    False,
-                                    f"PowerOff - Sending SLEEP command for"
-                                    f" {self.nodename[node]}\n"
-                                    )
-
-                        except ValueError:
-                            logging.error(
-                                "Invalid MAC-address in INI."
-                            )
+            message = f"PowerOff Extra Nodes - SLEEP command sent for {name}\n"
+            logging.info("PowerOff - Sending SLEEP command for %s", name)
+            self.write_log(message)
+            user.send_message(message=message.strip(), sound=self.pushover_sound)
 
 
-if __name__ == '__main__':
-
-    extranodes = EXTRA_NODES()
-    extranodes.run()
-    extranodes = None
+if __name__ == "__main__":
+    ExtraNodesPowerOff().run()

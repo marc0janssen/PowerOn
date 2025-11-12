@@ -32,8 +32,6 @@ MAIL_SENDER = user@domain.tld
 KEYWORD = keyword
 ; Comma separated list of allowed senders.
 ALLOWED_SENDERS = user1@domain1.tld, user2@domain2.tld, user3@domain3.tld
-; Number of available wake credits per sender. Use -1 for unlimited.
-ALLOWED_CREDITS = -1, 2, 5
 
 [POWEROFF]
 KEYWORD = keyword

@@ -1,176 +1,63 @@
-# Name: poweron
-# Coder: Marco Janssen (mastodon @marc0janssen@mastodon.online)
-# date: 2023-12-28 17:15:00
-# update: 2023-12-28 17:15:00
-
+"""Cron-based Wake on LAN utility."""
 import logging
-import sys
-import configparser
-import shutil
-import socket
-
-from datetime import datetime
 from wakeonlan import send_magic_packet
 from chump import Application
 
+from common import BasePowerService, ConfigError, ConfigOption
 
-class POWERON():
 
-    def __init__(self):
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            level=logging.INFO)
+class PowerOn(BasePowerService):
+    LOG_FILENAME = "poweron.log"
 
-        config_dir = "/config/"
-        app_dir = "/app/"
-        log_dir = "/var/log/"
-
-        self.config_file = "poweron.ini"
-        self.exampleconfigfile = "poweron.ini.example"
-        self.log_file = "poweron.log"
-
-        self.config_filePath = f"{config_dir}{self.config_file}"
-        self.log_filePath = f"{log_dir}{self.log_file}"
-
+    def __init__(self) -> None:
+        super().__init__(self.LOG_FILENAME)
         try:
-            with open(self.config_filePath, "r") as f:
-                f.close()
-            try:
-                self.config = configparser.ConfigParser()
-                self.config.read(self.config_filePath)
-
-                # GENERAL
-                self.enabled = True if (
-                    self.config['GENERAL']['ENABLED'] == "ON") else False
-                self.dry_run = True if (
-                    self.config['GENERAL']['DRY_RUN'] == "ON") else False
-                self.verbose_logging = True if (
-                    self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
-                    else False
-
-                # NODE
-                self.nodename = self.config['NODE']['NODE_NAME']
-                self.macaddress = self.config['NODE']['NODE_MAC']\
-                    .replace(":", "-").lower()
-                self.nodeip = self.config['NODE']['NODE_IP']
-                self.nodeport = int(self.config['NODE']['NODE_PORT'])
-
-                # PUSHOVER
-                self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
-                self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
-                self.pushover_sound = self.config['PUSHOVER']['SOUND']
-
-            except KeyError as e:
-                logging.error(
-                    f"Seems a key(s) {e} is missing from INI file. "
-                    f"Please check for mistakes. Exiting."
-                )
-
-                sys.exit()
-
-            except ValueError as e:
-                logging.error(
-                    f"Seems a invalid value in INI file. "
-                    f"Please check for mistakes. Exiting. "
-                    f"MSG: {e}"
-                )
-
-                sys.exit()
-
-        except IOError or FileNotFoundError:
-            logging.error(
-                f"Can't open file {self.config_filePath}"
-                f", creating example INI file."
+            self.nodename = self.require(ConfigOption("NODE", "NODE_NAME"))
+            self.macaddress = (
+                self.require(ConfigOption("NODE", "NODE_MAC")).replace(":", "-").lower()
             )
+            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
+            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
 
-            shutil.copyfile(f'{app_dir}{self.exampleconfigfile}',
-                            f'{config_dir}{self.exampleconfigfile}')
-            sys.exit()
+            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
+            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
+            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+        except ConfigError as error:
+            self.exit_with_config_error(error)
 
-    def writeLog(self, init, msg):
-        try:
-            if init:
-                logfile = open(self.log_filePath, "w")
-            else:
-                logfile = open(self.log_filePath, "a")
-            logfile.write(f"{datetime.now()} - {msg}")
-            logfile.close()
-        except IOError:
-            logging.error(
-                f"Can't write file {self.log_filePath}."
-            )
+    def _pushover(self):
+        return self.pushover_user(factory=Application)
 
-    def run(self):
-        # Setting for PushOver
-        self.appPushover = Application(self.pushover_token_api)
-        self.userPushover = self.appPushover.get_user(self.pushover_user_key)
+    def run(self) -> None:
+        user = self._pushover()
 
         if self.dry_run:
-            logging.info(
-                "*****************************************")
-            logging.info(
-                "**** DRY RUN, NOTHING WILL SET AWAKE ****")
-            logging.info(
-                "*****************************************")
+            logging.info("*****************************************")
+            logging.info("**** DRY RUN, NOTHING WILL SET AWAKE ****")
+            logging.info("*****************************************")
+            self.write_log("PowerOn - Dry run.\n")
 
-            self.writeLog(
-                False,
-                "PowerOn - Dry run.\n"
-            )
+        if not self.enabled:
+            return
 
-        if self.enabled:
-            sock = socket.socket(
-                socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(
-                (self.nodeip, self.nodeport))
-            if result != 0:
-                if not self.dry_run:
-                    try:
-                        send_magic_packet(self.macaddress)
+        if not self.is_port_open(self.nodeip, self.nodeport):
+            if not self.dry_run:
+                try:
+                    send_magic_packet(self.macaddress)
+                except ValueError:
+                    logging.error("Invalid MAC-address in INI.")
+                    return
 
-                        logging.info(
-                            "PowerOn - Sending WOL command by cron"
-                            )
-                        self.writeLog(
-                            False,
-                            "PowerOn - Sending WOL command by cron\n"
-                        )
-
-                        self.message = \
-                            self.userPushover.send_message(
-                                message="PowerOn - "
-                                "WOL command sent by cron",
-                                sound=self.pushover_sound
-                                )
-
-                    except ValueError:
-                        logging.error(
-                            "Invalid MAC-address in INI."
-                        )
-                        sys.exit()
-
-            else:
-                logging.info(
-                    "PowerOn - Nodes already running"
-                    " by cron"
-                )
-                self.writeLog(
-                    False,
-                    "PowerOn - Nodes already running by cron\n"
+                logging.info("PowerOn - Sending WOL command by cron")
+                self.write_log("PowerOn - Sending WOL command by cron\n")
+                user.send_message(
+                    message="PowerOn - WOL command sent by cron",
+                    sound=self.pushover_sound,
                 )
         else:
-            if self.verbose_logging:
-                logging.info(
-                    "PowerOn - Service is disabled by cron"
-                )
-            self.writeLog(
-                False,
-                "PowerOn - Service is disabled by cron\n"
-            )
+            logging.info("PowerOn - Nodes already running by cron")
+            self.write_log("PowerOn - Nodes already running by cron\n")
 
 
-if __name__ == '__main__':
-
-    poweron = POWERON()
-    poweron.run()
-    poweron = None
+if __name__ == "__main__":
+    PowerOn().run()
