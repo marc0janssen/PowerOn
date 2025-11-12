@@ -19,14 +19,28 @@ class PowerOffByEmail(MailPowerService):
     def __init__(self) -> None:
         super().__init__(self.LOG_FILENAME)
         try:
-            self.nodename = self.require(ConfigOption("NODE", "NODE_NAME"))
-            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
-            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
-            self.nodesshport = self.require_int(ConfigOption("NODE", "NODE_SSHPORT"))
-            self.nodeuser = self.require(ConfigOption("NODE", "NODE_USER"))
-            self.nodepwd = self.require(ConfigOption("NODE", "NODE_PWD"))
+            self.nodename = self.require(
+                ConfigOption("NODE", "NODE_NAME")
+            )
+            self.nodeip = self.require(
+                ConfigOption("NODE", "NODE_IP")
+            )
+            self.nodeport = self.require_int(
+                ConfigOption("NODE", "NODE_PORT")
+            )
+            self.nodesshport = self.require_int(
+                ConfigOption("NODE", "NODE_SSHPORT")
+            )
+            self.nodeuser = self.require(
+                ConfigOption("NODE", "NODE_USER")
+            )
+            self.nodepwd = self.require(
+                ConfigOption("NODE", "NODE_PWD")
+            )
 
-            self.keyword = self.require(ConfigOption("POWEROFF", "KEYWORD"))
+            self.keyword = self.require(
+                ConfigOption("POWEROFF", "KEYWORD")
+            )
             self.allowed_senders = self.require_list(
                 ConfigOption("POWEROFF", "ALLOWED_SENDERS")
             )
@@ -34,7 +48,9 @@ class PowerOffByEmail(MailPowerService):
                 ConfigOption("POWEROFF", "POWEROFFCOMMAND")
             )
 
-            self.defaulthour = self.require(ConfigOption("EXTENDTIME", "DEFAULT_HOUR"))
+            self.defaulthour = self.require(
+                ConfigOption("EXTENDTIME", "DEFAULT_HOUR")
+            )
             self.defaultminutes = self.require(
                 ConfigOption("EXTENDTIME", "DEFAULT_MINUTES")
             )
@@ -42,9 +58,15 @@ class PowerOffByEmail(MailPowerService):
                 ConfigOption("EXTENDTIME", "MAX_SHUTDOWN_HOUR_TIME")
             )
 
-            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
-            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
-            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+            self.pushover_user_key = self.require(
+                ConfigOption("PUSHOVER", "USER_KEY")
+            )
+            self.pushover_token_api = self.require(
+                ConfigOption("PUSHOVER", "TOKEN_API")
+            )
+            self.pushover_sound = self.require(
+                ConfigOption("PUSHOVER", "SOUND")
+            )
         except ConfigError as error:
             self.exit_with_config_error(error)
 
@@ -59,7 +81,11 @@ class PowerOffByEmail(MailPowerService):
             logging.error("File not found - %s.", self.CRONTAB_FILE)
             return
         except OSError as exc:
-            logging.error("Error reading the file %s: %s", self.CRONTAB_FILE, exc)
+            logging.error(
+                "Error reading the file %s: %s",
+                self.CRONTAB_FILE,
+                exc,
+            )
             return
 
         lines = content.split("\n")
@@ -75,7 +101,11 @@ class PowerOffByEmail(MailPowerService):
             with open(self.CRONTAB_FILE, "w", encoding="utf-8") as file:
                 file.write("\n".join(lines))
         except OSError as exc:
-            logging.error("Error writing the file %s: %s", self.CRONTAB_FILE, exc)
+            logging.error(
+                "Error writing the file %s: %s",
+                self.CRONTAB_FILE,
+                exc,
+            )
 
     def _execute_shutdown(self) -> subprocess.CompletedProcess:
         escaped_pwd = re.escape(self.nodepwd)
@@ -95,7 +125,9 @@ class PowerOffByEmail(MailPowerService):
     @staticmethod
     def _extract_sender(message) -> str:
         header = message.get("From", "")
-        decoded = MailPowerService.decode_header_value(header) if header else ""
+        decoded = (
+            MailPowerService.decode_header_value(header) if header else ""
+        )
         match = re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", decoded)
         return match.group(0) if match else ""
 
@@ -113,9 +145,13 @@ class PowerOffByEmail(MailPowerService):
             session.sendmail(self.mail_sender, [receiver], message.as_string())
             session.quit()
         except (gaierror, ConnectionRefusedError):
-            logging.error("Failed to connect to the server. Bad connection settings?")
+            logging.error(
+                "Failed to connect to the server. Bad connection settings?"
+            )
         except smtplib.SMTPServerDisconnected:
-            logging.error("Failed to connect to the server. Wrong user/password?")
+            logging.error(
+                "Failed to connect to the server. Wrong user/password?"
+            )
         except smtplib.SMTPException as exc:
             logging.error("SMTP error occurred: %s.", exc)
         else:
@@ -136,16 +172,20 @@ class PowerOffByEmail(MailPowerService):
         for uid, message in self.iter_messages(mailbox):
             subject = message.get("Subject", "")
             subject_text = (
-                MailPowerService.decode_header_value(subject) if subject else ""
+                MailPowerService.decode_header_value(subject)
+                if subject
+                else ""
             )
             sender = self._extract_sender(message)
 
             if subject_text.lower() != self.keyword.lower():
                 self.verbose(
-                    f"PowerOff - Subject not recognized. Skipping message. {sender}"
+                    "PowerOff - Subject not recognized. "
+                    f"Skipping message. {sender}"
                 )
                 self.write_log(
-                    f"PowerOff - Subject not recognized. Skipping message. {sender}\n"
+                    "PowerOff - Subject not recognized. "
+                    f"Skipping message. {sender}\n"
                 )
                 continue
 
@@ -176,8 +216,10 @@ class PowerOffByEmail(MailPowerService):
                     f"PowerOff - Nodes not running by {sender}\n"
                 )
                 response = (
-                    f"Hi,\n\n {self.nodename} is al uit, je hoeft het 'power off' commando"
-                    " niet meer te sturen.\n\nFijne dag!\n\n"
+                    "Hi,\n\n"
+                    f" {self.nodename} is al uit, je hoeft het 'power off' "
+                    "commando niet meer te sturen.\n\n"
+                    "Fijne dag!\n\n"
                 )
             else:
                 if not self.dry_run:
@@ -193,11 +235,15 @@ class PowerOffByEmail(MailPowerService):
                     f"PowerOff - Sending SLEEP command by {sender}\n"
                 )
                 user.send_message(
-                    message=f"PowerOffByEmail - SLEEP command sent by {sender}",
+                    message=(
+                        f"PowerOffByEmail - SLEEP command sent by {sender}"
+                    ),
                     sound=self.pushover_sound,
                 )
                 response = (
-                    f"Hi,\n\n {self.nodename} wordt uitgezet, even geduld.\n\nFijne dag!\n\n"
+                    "Hi,\n\n"
+                    f" {self.nodename} wordt uitgezet, even geduld.\n\n"
+                    "Fijne dag!\n\n"
                 )
 
             self._send_mail_response(sender, response)

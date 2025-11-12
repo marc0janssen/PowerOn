@@ -21,29 +21,47 @@ class PowerOffDelayByEmail(MailPowerService):
         self.shutdowntime = "00:00"
         self.maxshutdowntime = "00:00"
         try:
-            self.nodename = self.require(ConfigOption("NODE", "NODE_NAME"))
-            self.nodeip = self.require(ConfigOption("NODE", "NODE_IP"))
-            self.nodeport = self.require_int(ConfigOption("NODE", "NODE_PORT"))
+            self.nodename = self.require(
+                ConfigOption("NODE", "NODE_NAME")
+            )
+            self.nodeip = self.require(
+                ConfigOption("NODE", "NODE_IP")
+            )
+            self.nodeport = self.require_int(
+                ConfigOption("NODE", "NODE_PORT")
+            )
 
-            self.keyword = self.require(ConfigOption("EXTENDTIME", "KEYWORD"))
+            self.keyword = self.require(
+                ConfigOption("EXTENDTIME", "KEYWORD")
+            )
             self.allowed_senders = self.require_list(
                 ConfigOption("EXTENDTIME", "ALLOWED_SENDERS")
             )
             self.extend_hours = self.require_int(
                 ConfigOption("EXTENDTIME", "EXTEND_TIME_IN_HOURS")
             )
-            self.maxhour = self.require(ConfigOption("EXTENDTIME", "MAX_SHUTDOWN_HOUR_TIME"))
+            self.maxhour = self.require(
+                ConfigOption("EXTENDTIME", "MAX_SHUTDOWN_HOUR_TIME")
+            )
             self.defaultminutes = self.require(
                 ConfigOption("EXTENDTIME", "DEFAULT_MINUTES")
             )
-            self.defaulthour = self.require(ConfigOption("EXTENDTIME", "DEFAULT_HOUR"))
+            self.defaulthour = self.require(
+                ConfigOption("EXTENDTIME", "DEFAULT_HOUR")
+            )
             self.maxshutdowntime = (
                 f"{self.maxhour.zfill(2)}:{self.defaultminutes.zfill(2)}"
             )
 
-            self.pushover_user_key = self.require(ConfigOption("PUSHOVER", "USER_KEY"))
-            self.pushover_token_api = self.require(ConfigOption("PUSHOVER", "TOKEN_API"))
-            self.pushover_sound = self.require(ConfigOption("PUSHOVER", "SOUND"))
+            self.pushover_user_key = self.require(
+                ConfigOption("PUSHOVER", "USER_KEY")
+            )
+            self.pushover_token_api = self.require(
+                ConfigOption("PUSHOVER", "TOKEN_API")
+            )
+            self.pushover_sound = self.require(
+                ConfigOption("PUSHOVER", "SOUND")
+            )
         except ConfigError as error:
             self.exit_with_config_error(error)
 
@@ -52,7 +70,9 @@ class PowerOffDelayByEmail(MailPowerService):
 
     def _extract_sender(self, message) -> str:
         header = message.get("From", "")
-        decoded = MailPowerService.decode_header_value(header) if header else ""
+        decoded = (
+            MailPowerService.decode_header_value(header) if header else ""
+        )
         match = re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", decoded)
         return match.group(0) if match else ""
 
@@ -64,26 +84,32 @@ class PowerOffDelayByEmail(MailPowerService):
 
         if not self.enabled:
             body = (
-                f"Hi Hacker,\n\nDe service staat uit om {self.nodename} aan te kunnen zetten.\n"
+                "Hi Hacker,\n\n"
+                f"De service staat uit om {self.nodename} "
+                "aan te kunnen zetten.\n"
                 "Je hoeft en kunt nu dus even geen commando's geven.\n\n"
                 "Fijne dag!\n\n"
             )
         elif success:
             body = (
-                f"Hi Hacker,\n\n De node {self.nodename} blijft {self.extend_hours} uur extra aan.\n\n"
+                "Hi Hacker,\n\n"
+                f" De node {self.nodename} blijft {self.extend_hours} "
+                "uur extra aan.\n\n"
                 f"Deze opdracht komt van {sender}.\n\n"
                 f"De eindtijd is nu {self.shutdowntime}\n\n"
             )
             if self.shutdowntime != self.maxshutdowntime:
                 body += (
-                    "Als de eerste tijd is gepasseerd, is de volgende eindtijd "
-                    f"{self.maxshutdowntime}\n\n"
+                    "Als de eerste tijd is gepasseerd, is de volgende "
+                    f"eindtijd {self.maxshutdowntime}\n\n"
                 )
             body += "Fijne dag!\n\n"
         else:
             body = (
-                f"Hi Hacker,\n\n De node {self.nodename} staat nu uit.\n"
-                f"Je kunt de tijd nu niet verhogen.\n\nDeze opdracht komt van {sender}.\n\n"
+                "Hi Hacker,\n\n"
+                f" De node {self.nodename} staat nu uit.\n"
+                "Je kunt de tijd nu niet verhogen.\n\n"
+                f"Deze opdracht komt van {sender}.\n\n"
                 "Fijne dag!\n\n"
             )
 
@@ -100,17 +126,23 @@ class PowerOffDelayByEmail(MailPowerService):
             )
             session.quit()
         except (gaierror, ConnectionRefusedError):
-            logging.error("Failed to connect to the server. Bad connection settings?")
+            logging.error(
+                "Failed to connect to the server. Bad connection settings?"
+            )
         except smtplib.SMTPServerDisconnected:
-            logging.error("Failed to connect to the server. Wrong user/password?")
+            logging.error(
+                "Failed to connect to the server. Wrong user/password?"
+            )
         except smtplib.SMTPException as exc:
             logging.error("SMTP error occurred: %s.", exc)
         else:
             self.verbose(
-                f"PowerOffDelay - Mail Sent to {', '.join(self.allowed_senders)}."
+                "PowerOffDelay - Mail Sent to "
+                f"{', '.join(self.allowed_senders)}."
             )
             self.write_log(
-                f"PowerOffDelay - Mail Sent to {', '.join(self.allowed_senders)}.\n"
+                "PowerOffDelay - Mail Sent to "
+                f"{', '.join(self.allowed_senders)}.\n"
             )
 
     def _update_crontab(self) -> None:
@@ -121,7 +153,11 @@ class PowerOffDelayByEmail(MailPowerService):
             logging.error("File not found - %s.", self.CRONTAB_FILE)
             return
         except OSError as exc:
-            logging.error("Error reading the file %s: %s", self.CRONTAB_FILE, exc)
+            logging.error(
+                "Error reading the file %s: %s",
+                self.CRONTAB_FILE,
+                exc,
+            )
             return
 
         lines = content.split("\n")
@@ -136,14 +172,18 @@ class PowerOffDelayByEmail(MailPowerService):
                 except ValueError:
                     base_hour = int(self.defaulthour)
                 new_hour = (base_hour + self.extend_hours) % 24
-                max_compare = 24 if self.maxhour in {"0", "00"} else int(self.maxhour)
+                max_compare = (
+                    24 if self.maxhour in {"0", "00"} else int(self.maxhour)
+                )
 
                 if new_hour >= max_compare:
                     parts[1] = self.maxhour
                     shutdown_time = self.maxshutdowntime
                 else:
                     parts[1] = f"{new_hour},{self.maxhour}"
-                    shutdown_time = f"{str(new_hour).zfill(2)}:{minutes.zfill(2)}"
+                    shutdown_time = (
+                        f"{str(new_hour).zfill(2)}:{minutes.zfill(2)}"
+                    )
 
                 parts[0] = minutes
                 lines[index] = " ".join(parts)
@@ -158,7 +198,11 @@ class PowerOffDelayByEmail(MailPowerService):
             with open(self.CRONTAB_FILE, "w", encoding="utf-8") as file:
                 file.write("\n".join(lines))
         except OSError as exc:
-            logging.error("Error writing the file %s: %s", self.CRONTAB_FILE, exc)
+            logging.error(
+                "Error writing the file %s: %s",
+                self.CRONTAB_FILE,
+                exc,
+            )
             return
 
         result = subprocess.run(
@@ -204,16 +248,20 @@ class PowerOffDelayByEmail(MailPowerService):
         for uid, message in self.iter_messages(mailbox):
             subject = message.get("Subject", "")
             subject_text = (
-                MailPowerService.decode_header_value(subject) if subject else ""
+                MailPowerService.decode_header_value(subject)
+                if subject
+                else ""
             )
             sender = self._extract_sender(message)
 
             if subject_text.lower() != self.keyword.lower():
                 self.verbose(
-                    f"PowerOffDelay - Subject not recognized. Skipping message. {sender}"
+                    "PowerOffDelay - Subject not recognized. "
+                    f"Skipping message. {sender}"
                 )
                 self.write_log(
-                    f"PowerOffDelay - Subject not recognized. Skipping message. {sender}\n"
+                    "PowerOffDelay - Subject not recognized. "
+                    f"Skipping message. {sender}\n"
                 )
                 continue
 
