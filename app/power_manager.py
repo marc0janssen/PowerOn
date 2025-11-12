@@ -780,16 +780,22 @@ class PowerManager:
             subject = self._decode_subject(message)
             sender = self._extract_sender(message)
             if sender is None:
+                self.logger.info("geen sender gevonden")
                 continue
 
             if subject.lower() != self.power_on_settings.keyword.lower():
+                self.logger.info("geen juiste subject gevonden")
                 continue
 
             if sender not in self.power_on_settings.allowed_senders:
+                self.logger.info("sender niet toegestaan: %s", sender)
                 continue
 
             remaining = int(credits.get(sender, "0"))
             if remaining <= 0:
+                self.logger.info(
+                    "PowerOn - No remaining credits for %s", sender
+                )
                 continue
 
             if self.general.verbose_logging:
