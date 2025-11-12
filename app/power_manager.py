@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import configparser
 import imaplib
+import email
 import json
 import logging
 import re
@@ -278,10 +279,11 @@ class PowerManager:
                         if index < len(ssh_ports) and ssh_ports[index]
                         else None,
                         user=users[index] if index < len(users) else None,
-                        password=
-                        passwords[index]
-                        if index < len(passwords) and passwords[index]
-                        else None,
+                        password=(
+                            passwords[index]
+                            if index < len(passwords) and passwords[index]
+                            else None
+                        ),
                     )
                 )
 
@@ -321,13 +323,20 @@ class PowerManager:
     def _log_path(self, filename: str) -> Path:
         return self.log_directory / filename
 
-    def _write_log(self, filename: str, message: str, init: bool = False) -> None:
+    def _write_log(
+        self,
+        filename: str,
+        message: str,
+        init: bool = False,
+    ) -> None:
         try:
             mode = "w" if init else "a"
             with self._log_path(filename).open(mode) as handle:
                 handle.write(f"{datetime.now()} - {message}")
         except IOError:
-            self.logger.error("Can't write file %s.", self._log_path(filename))
+            self.logger.error(
+                "Can't write file %s.", self._log_path(filename)
+            )
 
     def _pushover_user_or_none(self):
         if self._pushover_user is None:
@@ -485,13 +494,15 @@ class PowerManager:
             session = smtplib.SMTP(self.mail.server, self.mail.port)
             session.starttls()
             session.login(self.mail.login, self.mail.password)
-            session.sendmail(self.mail.sender, [recipient], message.as_string())
+            data = message.as_string()
+            session.sendmail(self.mail.sender, [recipient], data)
             session.quit()
             if self.general.verbose_logging:
                 self.logger.info("Mail sent to %s.", recipient)
         except (gaierror, ConnectionRefusedError):
             self.logger.error(
-                "Failed to connect to the mail server. Bad connection settings?"
+                "Failed to connect to the mail server. "
+                "Bad connection settings?"
             )
         except smtplib.SMTPServerDisconnected:
             self.logger.error("Mail server disconnected unexpectedly.")
@@ -511,12 +522,14 @@ class PowerManager:
         if not self.general.enabled:
             if self.general.verbose_logging:
                 self.logger.info("PowerOn - Service is disabled by cron")
-            self._write_log(log_name, "PowerOn - Service is disabled by cron\n")
+            msg = "PowerOn - Service is disabled by cron\n"
+            self._write_log(log_name, msg)
             return
 
         if self._port_open(self.node.ip, self.node.port):
             self.logger.info("PowerOn - Nodes already running by cron")
-            self._write_log(log_name, "PowerOn - Nodes already running by cron\n")
+            msg = "PowerOn - Nodes already running by cron\n"
+            self._write_log(log_name, msg)
             return
 
         if self.general.dry_run:
@@ -529,7 +542,8 @@ class PowerManager:
             sys.exit(1)
 
         self.logger.info("PowerOn - Sending WOL command by cron")
-        self._write_log(log_name, "PowerOn - Sending WOL command by cron\n")
+        msg = "PowerOn - Sending WOL command by cron\n"
+        self._write_log(log_name, msg)
         self._send_pushover("PowerOn - WOL command sent by cron")
 
     def power_off(self) -> None:
@@ -542,12 +556,14 @@ class PowerManager:
         if not self.general.enabled:
             if self.general.verbose_logging:
                 self.logger.info("PowerOff - Service is disabled by cron")
-            self._write_log(log_name, "PowerOff - Service is disabled by cron\n")
+            msg = "PowerOff - Service is disabled by cron\n"
+            self._write_log(log_name, msg)
             return
 
         if not self._port_open(self.node.ip, self.node.port):
             self.logger.info("PowerOff - Node already down by cron")
-            self._write_log(log_name, "PowerOff - Node already down by cron\n")
+            msg = "PowerOff - Node already down by cron\n"
+            self._write_log(log_name, msg)
             return
 
         if self.general.dry_run:
@@ -557,7 +573,13 @@ class PowerManager:
             self.logger.error("Power off command not configured.")
             return
 
-        if not all([self.node.user, self.node.password, self.node.ssh_port]):
+        if not all(
+            [
+                self.node.user,
+                self.node.password,
+                self.node.ssh_port,
+            ]
+        ):
             self.logger.error("Missing SSH credentials for power off action.")
             return
 
@@ -574,7 +596,8 @@ class PowerManager:
             self.logger.info(result.stdout)
 
         self.logger.info("PowerOff - Sending SLEEP command by cron")
-        self._write_log(log_name, "PowerOff - Sending SLEEP command by cron\n")
+        msg = "PowerOff - Sending SLEEP command by cron\n"
+        self._write_log(log_name, msg)
         self._send_pushover("PowerOff - SLEEP command sent by cron")
         self._update_cron_default_schedule()
 
@@ -638,7 +661,8 @@ class PowerManager:
 
             if self.general.verbose_logging:
                 self.logger.info(
-                    "PowerOff - Found matching subject from %s", sender
+                    "PowerOff - Found matching subject from %s",
+                    sender,
                 )
             self._write_log(
                 log_name,
@@ -647,7 +671,8 @@ class PowerManager:
 
             if (
                 self.power_off_settings.allowed_senders
-                and sender not in self.power_off_settings.allowed_senders
+                and sender
+                not in self.power_off_settings.allowed_senders
             ):
                 continue
 
@@ -657,7 +682,8 @@ class PowerManager:
         if not self.general.enabled:
             if self.general.verbose_logging:
                 self.logger.info(
-                    "PowerOff - Service is disabled by %s", sender
+                    "PowerOff - Service is disabled by %s",
+                    sender,
                 )
             self._write_log(
                 log_name,
@@ -678,7 +704,13 @@ class PowerManager:
             if not self.power_off_settings:
                 self.logger.error("Power off command not configured.")
                 return
-            if not all([self.node.user, self.node.password, self.node.ssh_port]):
+            if not all(
+                [
+                    self.node.user,
+                    self.node.password,
+                    self.node.ssh_port,
+                ]
+            ):
                 self.logger.error("Missing SSH credentials for power off.")
                 return
             result = self._run_remote_command(
@@ -762,7 +794,8 @@ class PowerManager:
 
             if self.general.verbose_logging:
                 self.logger.info(
-                    "PowerOn - Found matching subject from %s", sender
+                    "PowerOn - Found matching subject from %s",
+                    sender,
                 )
             self._write_log(
                 log_name,
@@ -777,7 +810,8 @@ class PowerManager:
         if not self.general.enabled:
             if self.general.verbose_logging:
                 self.logger.info(
-                    "PowerOn - Service is disabled by %s", sender
+                    "PowerOn - Service is disabled by %s",
+                    sender,
                 )
             self._write_log(
                 log_name,
@@ -803,7 +837,8 @@ class PowerManager:
                 self.logger.error("Invalid MAC-address in INI.")
                 return False
             self.logger.info(
-                "PowerOn - Sending WOL command by %s", sender
+                "PowerOn - Sending WOL command by %s",
+                sender,
             )
             self._write_log(
                 log_name,
@@ -876,10 +911,9 @@ class PowerManager:
                 )
             else:
                 body = (
-                    "Hi,\n\n Helaas kon ik de geplande shutdown niet aanpassen."
-                    "\n\nFijne dag!\n\n"
+                    "Hi,\n\n Helaas kon ik de geplande shutdown niet "
+                    "aanpassen.\n\nFijne dag!\n\n"
                 )
-
             self._send_email(sender, f"PowerOn - {self.node.name}", body)
 
     # ------------------------------------------------------------------
@@ -913,7 +947,8 @@ class PowerManager:
                 self.logger.error("Invalid MAC-address for %s.", node.name)
                 continue
             message = (
-                f"PowerOn Extra Nodes - WOL command sent for {node.name} - {node.mac}\n"
+                f"PowerOn Extra Nodes - WOL command sent for {node.name} - "
+                f"{node.mac}\n"
             )
             self._write_log(log_name, message)
             self._send_pushover(
