@@ -91,7 +91,7 @@ class ExtraNodesPowerOff(BasePowerService):
             return
 
         if self.is_port_open(self.nodeip, self.nodeport):
-            logging.info(
+            self.verbose(
                 "PowerOff Extra Nodes - Primary node online, "
                 "skipping shutdown."
             )
