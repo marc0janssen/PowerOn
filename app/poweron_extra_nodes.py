@@ -102,7 +102,7 @@ class ExtraNodesPowerOn(BasePowerService):
                     sound=self.pushover_sound,
                 )
         else:
-            logging.info(
+            self.verbose(
                 "PowerOn Extra Nodes - Primary node offline, skipping wake."
             )
 
